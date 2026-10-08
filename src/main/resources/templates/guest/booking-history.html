@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking History | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Booking History</h1>
+                <p class="page-subtitle">Review your previous stays, past folios, and archive records</p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.5rem;">
+                <a th:href="@{/guest/dashboard}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </a>
+                <a th:href="@{/hotels}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-hotel"></i> Explore Karnataka Hotels
+                </a>
+            </div>
+        </div>
+
+        <!-- Guest Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/guest/dashboard}" class="sub-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/guest/my-bookings}" class="sub-nav-item"><i class="fas fa-calendar-check"></i> My Bookings</a>
+            <a th:href="@{/guest/booking-history}" class="sub-nav-item active"><i class="fas fa-history"></i> Booking History</a>
+            <a th:href="@{/guest/recommendations}" class="sub-nav-item"><i class="fas fa-gem"></i> Recommendations</a>
+            <a th:href="@{/guest/offers}" class="sub-nav-item"><i class="fas fa-tag"></i> Offers</a>
+            <a th:href="@{/guest/services}" class="sub-nav-item"><i class="fas fa-concierge-bell"></i> Services</a>
+            <a th:href="@{/guest/districts}" class="sub-nav-item"><i class="fas fa-map-marked-alt"></i> Districts</a>
+            <a th:href="@{/guest/profile}" class="sub-nav-item"><i class="fas fa-user-cog"></i> Profile</a>
+        </nav>
+
+        <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="card-title brand-font"><i class="fas fa-receipt"></i> Completed Stays &amp; Past Invoices</h3>
+                <span class="badge badge-info" th:text="${#lists.size(bookings)} + ' Records Found'">0 Records</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Hotel &amp; Location</th>
+                                <th>Room Number</th>
+                                <th>Category</th>
+                                <th>Stay Duration</th>
+                                <th>Total Tariff</th>
+                                <th>Status</th>
+                                <th>Folio / Invoice</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="booking : ${bookings}">
+                                <td>
+                                    <strong style="color: var(--primary-dark);" th:text="${booking.bookingReference}">BK-2026-0001</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="${#temporals.format(booking.bookingDate, 'dd-MMM-yyyy HH:mm')}">01-Oct-2026</div>
+                                </td>
+                                <td>
+                                    <strong th:text="${booking.getHotelName()}">The Leela Palace</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                        <i class="fas fa-map-marker-alt" style="color: var(--gold-accent);"></i> <span th:text="${booking.getHotelLocation()}">Bengaluru, Karnataka</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong th:text="'Room ' + ${booking.room.roomNumber}">Room 201</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="'Floor ' + ${booking.room.floorNumber}">Floor 2</div>
+                                </td>
+                                <td>
+                                    <span class="room-category-pill" style="position: static; font-size: 0.7rem; padding: 0.2rem 0.5rem;" th:text="${booking.roomType != null and !booking.roomType.isBlank() ? booking.roomType : booking.room.category.displayName}">Deluxe</span>
+                                </td>
+                                <td>
+                                    <div th:text="${booking.checkInDate} + ' to ' + ${booking.checkOutDate}">2026-10-01 to 2026-10-04</div>
+                                    <span style="font-size: 0.75rem; color: var(--gold-accent); font-weight: 600;" th:text="${booking.calculateTotalNights()} + ' Nights'">3 Nights</span>
+                                </td>
+                                <td>
+                                    <strong style="color: var(--gold-accent); font-family: 'Cinzel', serif;" th:text="'₹' + ${#numbers.formatDecimal(booking.totalAmount, 1, 2)}">₹14,400.00</strong>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${booking.status.name() == 'COMPLETED' ? 'badge-success' : (booking.status.name() == 'CANCELLED' ? 'badge-danger' : 'badge-info')}"
+                                          th:text="${booking.status.displayName}">Completed</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline btn-sm" title="Download Tax Invoice">
+                                        <i class="fas fa-file-pdf"></i> PDF
+                                    </button>
+                                </td>
+                                <td>
+                                    <a th:href="@{/bookings/new(hotelId=${booking.hotel != null ? booking.hotel.id : null}, roomId=${booking.room != null ? booking.room.id : null}, roomType=${booking.roomType != null ? booking.roomType : booking.room.category.displayName})}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-redo"></i> Rebook
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(bookings)}">
+                                <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                                    <i class="fas fa-history" style="font-size: 2.2rem; margin-bottom: 0.75rem; display: block; opacity: 0.4;"></i>
+                                    No past booking history found in your account.<br>
+                                    <a th:href="@{/hotels}" class="btn btn-outline btn-sm" style="margin-top: 1rem;">
+                                        <i class="fas fa-hotel"></i> Explore India Luxury Hotels
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

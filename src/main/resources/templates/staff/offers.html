@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Promotional Offers | Staff Desk</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .staff-offer-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .staff-offer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--gold-accent);
+        }
+
+        .promo-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.75rem;
+            background: #f1f5f9;
+            border: 1px dashed var(--gold-accent);
+            border-radius: var(--radius-sm);
+            font-family: monospace;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 0.88rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <span style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--gold-accent); letter-spacing: 0.08em;">
+                    <i class="fas fa-tag"></i> Guest Privileges &amp; Promotions
+                </span>
+                <h1 class="page-title" style="margin-top: 0.2rem;">Active Promotional Offers &amp; Tariffs</h1>
+                <p class="page-subtitle">Reference active luxury discounts, guest perks, and promo codes for guest concierge assistance.</p>
+            </div>
+            <div>
+                <a th:href="@{/staff/dashboard}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-th-large"></i> Go to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="destinations-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+            <div th:each="offer : ${offers}" class="staff-offer-card">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                        <span class="badge" style="background: rgba(197, 160, 89, 0.15); color: var(--primary-dark); font-weight: 700; font-size: 0.75rem; padding: 0.25rem 0.65rem;"
+                              th:text="${offer.tag}">Luxury Privilege</span>
+                        <span class="badge" style="background: #ecfdf5; color: #059669; font-weight: 700; font-size: 0.75rem; padding: 0.25rem 0.65rem;">Active Privilege</span>
+                    </div>
+
+                    <h3 class="brand-font" style="font-size: 1.25rem; color: var(--primary-dark); margin: 0 0 0.5rem;" th:text="${offer.title}">Offer Title</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;" th:text="${offer.subtitle}">Subtitle description</p>
+
+                    <div style="background: #f8fafc; border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1rem; border: 1px solid var(--border-color);">
+                        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">Guest Inclusions:</div>
+                        <p style="font-size: 0.82rem; color: var(--text-dark); margin: 0; line-height: 1.45; white-space: pre-line;" th:text="${offer.perks}">Complimentary breakfast, airport transfers</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">Promo Code:</div>
+                        <div class="promo-chip">
+                            <i class="fas fa-ticket-alt" style="color: var(--gold-accent);"></i>
+                            <span th:text="${offer.promoCode}">ROYAL-LUXURY</span>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">Concession:</div>
+                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--gold-accent);" th:text="${#numbers.formatDecimal(offer.discountPercentage, 1, 0)} + '% OFF'">25% OFF</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

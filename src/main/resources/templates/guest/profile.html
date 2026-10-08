@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Profile | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Guest Profile</h1>
+                <p class="page-subtitle">Your personal account credentials and security status</p>
+            </div>
+            <div class="page-actions">
+                <a th:href="@{/guest/dashboard}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Guest Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/guest/dashboard}" class="sub-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/guest/my-bookings}" class="sub-nav-item"><i class="fas fa-calendar-check"></i> My Bookings</a>
+            <a th:href="@{/guest/profile}" class="sub-nav-item active"><i class="fas fa-user-circle"></i> Profile</a>
+        </nav>
+
+        <div style="display: flex; justify-content: center;">
+            <div style="max-width: 650px; width: 100%;">
+                <div class="profile-card">
+                    <div class="profile-header" style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%);">
+                        <div class="profile-avatar-circle" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h2 style="color: #ffffff; font-size: 1.45rem; margin-bottom: 0.25rem;" th:text="${guest.fullName != null ? guest.fullName : guest.username}">Guest Full Name</h2>
+                        <span class="badge" style="background: #d1fae5; color: #065f46; font-weight: 700;">
+                            REGISTERED GUEST CUSTOMER
+                        </span>
+                    </div>
+
+                    <div style="padding: 2rem;">
+                        <h4 style="font-size: 1rem; color: var(--primary-dark); margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                            Account Credentials &amp; Identity
+                        </h4>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Full Name</label>
+                                <div style="font-size: 1.05rem; font-weight: 600; color: var(--primary-dark);" th:text="${guest.fullName != null ? guest.fullName : guest.username}">Alex Morgan</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Username</label>
+                                <div style="font-size: 1.05rem; font-weight: 600; color: var(--primary-dark);" th:text="${guest.username}">alex_guest</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Email Address</label>
+                                <div style="font-size: 0.95rem; color: var(--primary-navy);" th:text="${guest.email}">alex@example.com</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">System Role</label>
+                                <div><span class="badge" style="background: #f0fdf4; color: #15803d; font-weight: 600;">ROLE_GUEST</span></div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Account Status</label>
+                                <div>
+                                    <span th:if="${guest.status != null and guest.status.name() == 'ACTIVE'}" class="badge-active">
+                                        <i class="fas fa-check-circle"></i> ACTIVE
+                                    </span>
+                                    <span th:unless="${guest.status != null and guest.status.name() == 'ACTIVE'}" class="badge-inactive">
+                                        <i class="fas fa-ban"></i> INACTIVE
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Account Registered</label>
+                                <div style="font-size: 0.95rem; color: var(--text-dark);" th:text="${#temporals.format(guest.createdAt, 'dd MMM yyyy, HH:mm')}">Date</div>
+                            </div>
+                        </div>
+
+                        <!-- Stays & Reservation Summary -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-sm); padding: 0.85rem 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.75rem; text-transform: uppercase; color: #065f46; font-weight: 600;">Active Stays</div>
+                                    <div style="font-size: 1.25rem; font-weight: 700; color: #065f46; font-family: 'Cinzel', serif;" th:text="${activeBookingsCount != null ? activeBookingsCount : 0}">0</div>
+                                </div>
+                                <a th:href="@{/guest/my-bookings}" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">
+                                    View Stays <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                            <div style="background: rgba(200, 155, 60, 0.08); border: 1px solid rgba(200, 155, 60, 0.2); border-radius: var(--radius-sm); padding: 0.85rem 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--gold-accent); font-weight: 600;">Booking History</div>
+                                    <div style="font-size: 1.25rem; font-weight: 700; color: var(--gold-accent); font-family: 'Cinzel', serif;" th:text="${pastBookingsCount != null ? pastBookingsCount : 0}">0</div>
+                                </div>
+                                <a th:href="@{/guest/booking-history}" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">
+                                    View Past <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+                            <i class="fas fa-shield-alt" style="color: var(--success); margin-right: 0.35rem;"></i>
+                            Password is protected using high-iteration <strong>BCrypt</strong> hashing in the PostgreSQL database. Your profile session is protected by Spring Security.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

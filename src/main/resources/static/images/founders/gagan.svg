@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="gaganGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1128" />
+      <stop offset="100%" stop-color="#1c2d5a" />
+    </linearGradient>
+    <linearGradient id="goldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4af37" />
+      <stop offset="100%" stop-color="#f5e08c" />
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="url(#gaganGrad)" stroke="url(#goldBorder)" stroke-width="3"/>
+  <circle cx="60" cy="46" r="22" fill="#c5a059" opacity="0.9"/>
+  <path d="M26,98 C26,76 40,68 60,68 C80,68 94,76 94,98 Z" fill="#c5a059" opacity="0.9"/>
+  <text x="60" y="53" font-family="'Cinzel', 'Playfair Display', serif" font-size="18" font-weight="700" fill="#0a1128" text-anchor="middle">G</text>
+</svg>

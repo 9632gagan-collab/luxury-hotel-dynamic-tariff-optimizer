@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offers & Privileges Management | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .offers-admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .offer-manage-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.25s ease;
+        }
+        .offer-manage-card:hover {
+            border-color: var(--gold-accent);
+            box-shadow: var(--shadow-md);
+        }
+        .offer-perks-list {
+            list-style: none;
+            padding: 0;
+            margin: 0.75rem 0 1.25rem;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+        .offer-perks-list li {
+            margin-bottom: 0.35rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.45rem;
+        }
+        .offer-perks-list li i {
+            color: var(--gold-accent);
+            margin-top: 0.2rem;
+            font-size: 0.75rem;
+        }
+        /* Modal for Create / Edit Offer */
+        .offer-modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 17, 40, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .offer-modal-backdrop.open {
+            display: flex;
+        }
+        .offer-modal-content {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            max-width: 650px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+            <div>
+                <h1 class="page-title">Executive Offers &amp; Privileges Management</h1>
+                <p class="page-subtitle">Single source of truth: Manage guest promotional packages, tariff concessions, and seasonal privileges</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="button" class="btn btn-primary btn-sm" onclick="openCreateOfferModal()">
+                    <i class="fas fa-plus-circle"></i> Create New Offer
+                </button>
+                <a th:href="@{/guest/offers}" target="_blank" class="btn btn-outline btn-sm" title="Preview Guest View">
+                    <i class="fas fa-external-link-alt"></i> Preview Guest View
+                </a>
+            </div>
+        </div>
+
+        <!-- Success Alert -->
+        <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom: 1.5rem;">
+            <i class="fas fa-check-circle"></i> <span th:text="${successMessage}">Operation successful</span>
+        </div>
+
+        <!-- Offers Cards Grid -->
+        <div class="offers-admin-grid">
+            <div class="offer-manage-card" th:each="o : ${offers}">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                        <span class="badge" th:classappend="${o.active} ? 'badge-success' : 'badge-secondary'"
+                              th:text="${o.active} ? 'Active in Guest Portal' : 'Inactive / Paused'">Active</span>
+                        <span class="badge badge-outline" style="font-size: 0.75rem;" th:text="${o.tag != null ? o.tag : 'Exclusive'}">Karnataka Season</span>
+                    </div>
+
+                    <h3 style="font-size: 1.15rem; font-family: 'Cinzel', serif; color: var(--primary-dark); margin: 0.4rem 0 0.2rem;" th:text="${o.title}">
+                        Kodagu &amp; Western Ghats Serenade
+                    </h3>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0 0 0.75rem;" th:text="${o.subtitle}">
+                        Valid across Coorg &amp; Chikkamagaluru resorts
+                    </p>
+
+                    <div style="background: rgba(197, 160, 89, 0.08); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px dashed var(--gold-accent); margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 0.68rem; text-transform: uppercase; color: var(--text-muted);">Promo Code</div>
+                            <strong style="color: var(--primary-dark); font-size: 1rem; letter-spacing: 1px;" th:text="${o.promoCode}">GH-COORG25</strong>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.68rem; text-transform: uppercase; color: var(--text-muted);">Tariff Concession</div>
+                            <strong style="color: var(--gold-accent); font-size: 1.1rem;" th:text="${#numbers.formatDecimal(o.discountPercentage, 0, 0) + '% OFF'}">25% OFF</strong>
+                        </div>
+                    </div>
+
+                    <ul class="offer-perks-list">
+                        <li th:each="p : ${o.perkItems}">
+                            <i class="fas fa-check-circle"></i> <span th:text="${p}">Perk description</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Action Controls: Edit, Toggle Active/Inactive, Delete -->
+                <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                    <form th:action="@{/admin/offers/{id}/toggle-status(id=${o.id})}" method="post" style="display: inline; margin: 0;">
+                        <input type="hidden" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}" />
+                        <button type="submit" class="btn btn-sm" th:classappend="${o.active} ? 'btn-outline' : 'btn-primary'"
+                                th:title="${o.active} ? 'Pause offer' : 'Publish offer to guests'">
+                            <i class="fas" th:classappend="${o.active} ? 'fa-pause' : 'fa-play'"></i>
+                            <span th:text="${o.active} ? 'Pause' : 'Activate'">Pause</span>
+                        </button>
+                    </form>
+
+                    <button type="button" class="btn btn-outline btn-sm"
+                            th:data-id="${o.id}"
+                            th:data-title="${o.title}"
+                            th:data-tag="${o.tag}"
+                            th:data-subtitle="${o.subtitle}"
+                            th:data-perks="${o.perks}"
+                            th:data-promo="${o.promoCode}"
+                            th:data-discount="${o.discountPercentage}"
+                            th:data-district="${o.targetDistrict}"
+                            th:data-url="${o.targetUrl}"
+                            th:data-active="${o.active}"
+                            onclick="openEditOfferModal(this)">
+                        <i class="fas fa-edit"></i> Edit Details
+                    </button>
+
+                    <form th:action="@{/admin/offers/{id}/delete(id=${o.id})}" method="post" onsubmit="return confirm('Are you sure you want to delete this offer?');" style="display: inline; margin: 0;">
+                        <input type="hidden" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}" />
+                        <button type="submit" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.4);" title="Delete offer">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create / Edit Offer Modal -->
+    <div class="offer-modal-backdrop" id="offerModal">
+        <div class="offer-modal-content">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="modalTitle" style="margin: 0; font-family: 'Cinzel', serif; font-size: 1.15rem; color: var(--primary-dark);">Create New Offer</h3>
+                <button type="button" onclick="closeOfferModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+
+            <form id="offerForm" th:action="@{/admin/offers/create}" method="post" style="padding: 1.5rem;">
+                <input type="hidden" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}" />
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem;">Offer Title *</label>
+                    <input type="text" name="title" id="formTitle" class="form-control" required placeholder="e.g. Royal Mysuru Heritage Escape" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem;">Tag / Theme</label>
+                        <input type="text" name="tag" id="formTag" class="form-control" placeholder="e.g. Heritage Escape, Karnataka Season" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem;">Target District</label>
+                        <input type="text" name="targetDistrict" id="formDistrict" class="form-control" placeholder="e.g. Mysuru, Kodagu" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem;">Subtitle / Description</label>
+                    <input type="text" name="subtitle" id="formSubtitle" class="form-control" placeholder="e.g. Immerse in royal palaces & UNESCO monuments" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem;">Promo Code *</label>
+                        <input type="text" name="promoCode" id="formPromo" class="form-control" required placeholder="e.g. GH-ROYAL20" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem;">Discount % *</label>
+                        <input type="number" step="1" min="1" max="90" name="discountPercentage" id="formDiscount" class="form-control" required value="20" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem;">Perks &amp; Privileges (One per line)</label>
+                    <textarea name="perks" id="formPerks" rows="4" class="form-control" placeholder="Complimentary heritage tour chaperone&#10;Royal candlelit private dinner&#10;Late checkout until 3:00 PM" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem;">Target Discovery URL</label>
+                    <input type="text" name="targetUrl" id="formUrl" class="form-control" placeholder="e.g. /hotels?district=Mysuru" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeOfferModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="modalSubmitBtn"><i class="fas fa-save"></i> Save Offer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <script>
+        function openCreateOfferModal() {
+            document.getElementById('modalTitle').innerText = 'Create New Luxury Offer';
+            document.getElementById('offerForm').action = '/admin/offers/create';
+            document.getElementById('formTitle').value = '';
+            document.getElementById('formTag').value = '';
+            document.getElementById('formSubtitle').value = '';
+            document.getElementById('formPerks').value = '';
+            document.getElementById('formPromo').value = '';
+            document.getElementById('formDiscount').value = '20';
+            document.getElementById('formDistrict').value = '';
+            document.getElementById('formUrl').value = '';
+            document.getElementById('offerModal').classList.add('open');
+        }
+
+        function openEditOfferModal(btn) {
+            const id = btn.getAttribute('data-id');
+            document.getElementById('modalTitle').innerText = 'Edit Offer Details';
+            document.getElementById('offerForm').action = '/admin/offers/' + id + '/edit';
+            document.getElementById('formTitle').value = btn.getAttribute('data-title') || '';
+            document.getElementById('formTag').value = btn.getAttribute('data-tag') || '';
+            document.getElementById('formSubtitle').value = btn.getAttribute('data-subtitle') || '';
+            document.getElementById('formPerks').value = btn.getAttribute('data-perks') || '';
+            document.getElementById('formPromo').value = btn.getAttribute('data-promo') || '';
+            document.getElementById('formDiscount').value = btn.getAttribute('data-discount') || '20';
+            document.getElementById('formDistrict').value = btn.getAttribute('data-district') || '';
+            document.getElementById('formUrl').value = btn.getAttribute('data-url') || '';
+            document.getElementById('offerModal').classList.add('open');
+        }
+
+        function closeOfferModal() {
+            document.getElementById('offerModal').classList.remove('open');
+        }
+    </script>
+</body>
+</html>

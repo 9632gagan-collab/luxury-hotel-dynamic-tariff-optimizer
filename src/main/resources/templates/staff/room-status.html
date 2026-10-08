@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Status &amp; Housekeeping | Staff Desk</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Room Operational Status Board</h1>
+                <p class="page-subtitle">Real-time status board across all 6 RoomStatus states (Available, Occupied, Cleaning, Maintenance, etc.)</p>
+            </div>
+        </div>
+
+        <!-- Staff Sub Navigation -->
+        <nav class="sub-navbar">
+            <a href="/staff/dashboard" class="sub-nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="/staff/bookings" class="sub-nav-item"><i class="fas fa-calendar-check"></i> Bookings</a>
+            <a href="/staff/guests" class="sub-nav-item"><i class="fas fa-users"></i> Guests</a>
+            <a href="/staff/room-status" class="sub-nav-item active"><i class="fas fa-door-open"></i> Room Status</a>
+        </nav>
+
+        <!-- Room Status Grid -->
+        <div class="room-grid">
+            <div th:each="room : ${rooms}" class="room-card">
+                <div class="room-image-wrap" style="height: 140px;">
+                    <img th:src="${room.imageUrl}" th:alt="${room.category.displayName}" class="room-image">
+                    <span class="room-category-pill" th:text="${room.category.displayName}">Suite</span>
+                    <span class="room-status-badge badge" th:classappend="${room.status.badgeClass}" th:text="${room.status.displayName}">Available</span>
+                </div>
+                <div class="room-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span class="room-number" th:text="'Room ' + ${room.roomNumber}">Room 101</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fas fa-layer-group"></i> Floor <span th:text="${room.floorNumber}">1</span></span>
+                    </div>
+
+                    <form th:action="@{/staff/room-status/{id}(id=${room.id})}" method="post" style="margin-top: 0.75rem;">
+                        <label class="form-label" style="font-size: 0.78rem; text-transform: uppercase;">Update Status State</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <select name="status" class="form-control" style="font-size: 0.85rem; padding: 0.4rem;">
+                                <option th:each="s : ${statuses}" th:value="${s.name()}"
+                                        th:text="${s.displayName}"
+                                        th:selected="${room.status == s}">
+                                    Available
+                                </option>
+                            </select>
+                            <button type="submit" class="btn btn-dark btn-sm"><i class="fas fa-sync"></i> Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

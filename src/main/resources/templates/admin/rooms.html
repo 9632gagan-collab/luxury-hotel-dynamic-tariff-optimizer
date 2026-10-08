@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Inventory Management | Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Luxury Room &amp; Suite Inventory</h1>
+                <p class="page-subtitle">Configure hotel rooms, base price structures, and category tiers</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Add New Room (Stage 2)</button>
+            </div>
+        </div>
+
+        <!-- Admin Sub Navigation -->
+        <nav class="sub-navbar">
+            <a href="/admin/dashboard" class="sub-nav-item"><i class="fas fa-chart-bar"></i> Dashboard</a>
+            <a href="/admin/rooms" class="sub-nav-item active"><i class="fas fa-bed"></i> Rooms</a>
+            <a href="/admin/bookings" class="sub-nav-item"><i class="fas fa-clipboard-list"></i> Bookings</a>
+            <a href="/admin/staff" class="sub-nav-item"><i class="fas fa-user-tie"></i> Staff</a>
+            <a href="/admin/reports" class="sub-nav-item"><i class="fas fa-file-invoice-dollar"></i> Reports</a>
+        </nav>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title brand-font"><i class="fas fa-door-closed"></i> All Cataloged Rooms</h3>
+                <span class="badge badge-dark" th:text="${#lists.size(rooms)} + ' Total Suites'">6 Total Suites</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Room Number</th>
+                                <th>Category Tier</th>
+                                <th>Floor</th>
+                                <th>Base Price / Night</th>
+                                <th>Current Tariff</th>
+                                <th>Max Occupancy</th>
+                                <th>Current Status</th>
+                                <th>Amenities</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="room : ${rooms}">
+                                <td><strong style="color: var(--primary-dark); font-size: 1rem;" th:text="${room.roomNumber}">101</strong></td>
+                                <td>
+                                    <span class="room-category-pill" style="position: static; font-size: 0.72rem; padding: 0.2rem 0.55rem;" th:text="${room.category.displayName}">Deluxe</span>
+                                </td>
+                                <td th:text="'Floor ' + ${room.floorNumber}">Floor 1</td>
+                                <td><span th:text="'₹' + ${#numbers.formatDecimal(room.basePricePerNight, 1, 2)}">₹4,500.00</span></td>
+                                <td><strong style="color: var(--gold-accent);" th:text="'₹' + ${#numbers.formatDecimal(room.currentTariff, 1, 2)}">₹4,500.00</strong></td>
+                                <td th:text="${room.maxOccupancy} + ' Guests'">2 Guests</td>
+                                <td>
+                                    <span class="badge" th:classappend="${room.status.badgeClass}" th:text="${room.status.displayName}">Available</span>
+                                </td>
+                                <td>
+                                    <span th:each="a : ${room.amenities}" class="amenity-tag" style="margin-right: 0.25rem;" th:text="${a.name}">Wi-Fi</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

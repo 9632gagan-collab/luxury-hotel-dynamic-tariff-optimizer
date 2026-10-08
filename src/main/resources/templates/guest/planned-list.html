@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Planned List | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .planned-compact-list,
+        .planner-container {
+            max-width: 860px;
+            margin: 1.5rem auto 3.5rem auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.15rem;
+        }
+
+        .planned-compact-item,
+        .planner-item-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--gold-accent);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem 1.6rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .planned-compact-item:hover,
+        .planner-item-card:hover {
+            box-shadow: var(--shadow-md);
+            border-left-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .planned-compact-info,
+        .planner-item-main {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .planned-hotel-name,
+        .planner-hotel-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.22rem;
+            color: var(--primary-dark);
+            margin: 0;
+            font-weight: 700;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .planned-hotel-location,
+        .planner-hotel-location {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .planner-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1.25rem;
+            margin-top: 0.4rem;
+            font-size: 0.88rem;
+        }
+
+        .planner-meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .planner-meta-label {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .planner-meta-val {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .btn-edit-dates {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.2rem 0.55rem;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--gold-accent);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all var(--transition-fast);
+            margin-left: 0.25rem;
+        }
+
+        .btn-edit-dates:hover {
+            background: rgba(200, 155, 60, 0.1);
+            border-color: var(--gold-accent);
+            color: var(--primary-dark);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.22rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .status-badge.status-planned {
+            background: rgba(200, 155, 60, 0.12);
+            color: #926615;
+            border: 1px solid rgba(200, 155, 60, 0.3);
+        }
+
+        .status-badge.status-booked {
+            background: rgba(16, 185, 129, 0.12);
+            color: #047857;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-badge.status-completed {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .planned-compact-actions,
+        .planner-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .planned-view-btn,
+        .planner-btn {
+            padding: 0.5rem 1.05rem;
+            font-size: 0.84rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+        }
+
+        .btn-remove-item,
+        .btn-remove-planned {
+            background: transparent;
+            border: 1px solid rgba(220, 38, 38, 0.35);
+            color: #dc2626;
+            border-radius: var(--radius-sm);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.84rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-remove-item:hover,
+        .btn-remove-planned:hover {
+            background: #fef2f2;
+            border-color: #dc2626;
+            color: #b91c1c;
+        }
+
+        /* Booking Reminder Wrap */
+        .booking-reminder-wrap {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            padding: 0.45rem 0.85rem;
+            background: rgba(200, 155, 60, 0.08);
+            border: 1px solid rgba(200, 155, 60, 0.25);
+            border-radius: var(--radius-sm);
+        }
+
+        .reminder-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: var(--gold-accent);
+            text-transform: uppercase;
+        }
+
+        .reminder-countdown {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-family: 'Cinzel', serif;
+            line-height: 1.25;
+        }
+
+        .reminder-subtext {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .booking-reminder-wrap.reminder-reached {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .booking-reminder-wrap.reminder-reached .reminder-label {
+            color: var(--success);
+        }
+
+        .booking-reminder-wrap.reminder-current-stay {
+            background: rgba(14, 165, 233, 0.08);
+            border-color: rgba(14, 165, 233, 0.3);
+        }
+
+        .booking-reminder-wrap.reminder-current-stay .reminder-label {
+            color: #0284c7;
+        }
+
+        .booking-reminder-wrap.reminder-current-stay .reminder-countdown {
+            color: #0284c7;
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+
+        .booking-reminder-wrap.reminder-completed {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .booking-reminder-wrap.reminder-completed .reminder-label {
+            color: #64748b;
+        }
+
+        .booking-reminder-wrap.reminder-completed .reminder-countdown {
+            color: #64748b;
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+
+        /* Empty State */
+        .empty-planned-state,
+        .empty-planner-state {
+            text-align: center;
+            padding: 4.5rem 2rem;
+            background: #ffffff;
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            max-width: 680px;
+            margin: 2.5rem auto;
+        }
+
+        .empty-icon-circle {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: rgba(201, 168, 76, 0.12);
+            color: var(--gold-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            margin: 0 auto 1.35rem;
+            border: 1px solid rgba(201, 168, 76, 0.3);
+        }
+
+        /* Date Modal Styling */
+        .date-modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 17, 40, 0.55);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .date-modal-backdrop.open {
+            display: flex;
+        }
+
+        .date-modal-box {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-xl);
+            max-width: 460px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            animation: modalFadeIn 0.25s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .date-modal-header {
+            background: var(--primary-dark);
+            color: #ffffff;
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .date-modal-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .date-modal-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.2rem;
+            line-height: 1;
+            transition: color var(--transition-fast);
+        }
+
+        .date-modal-close:hover {
+            color: #ffffff;
+        }
+
+        .date-modal-body {
+            padding: 1.5rem;
+        }
+
+        .date-form-group {
+            margin-bottom: 1.15rem;
+        }
+
+        .date-form-group label {
+            display: block;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.4rem;
+        }
+
+        .date-form-group input[type="date"] {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 0.92rem;
+            font-family: inherit;
+            color: var(--text-dark);
+            background: #ffffff;
+            box-sizing: border-box;
+        }
+
+        .date-form-group input[type="date"]:focus {
+            outline: none;
+            border-color: var(--gold-accent);
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.2);
+        }
+
+        .date-modal-footer {
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 680px) {
+            .planned-compact-item,
+            .planner-item-card {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1.15rem;
+                gap: 1rem;
+            }
+
+            .planned-stay-reminder {
+                width: 100%;
+                align-items: flex-start !important;
+                text-align: left !important;
+            }
+
+            .planner-meta-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.45rem;
+            }
+
+            .planned-compact-actions,
+            .planner-item-actions {
+                width: 100%;
+                justify-content: flex-start;
+                border-top: 1px solid var(--border-color);
+                padding-top: 0.85rem;
+            }
+
+            .planned-view-btn,
+            .planner-btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                    <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--gold-accent); letter-spacing: 0.08em;">
+                        <i class="fas fa-bookmark"></i> Travel Planner
+                    </span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">&bull;</span>
+                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);" th:text="${#lists.size(plannedHotels)} + ' Properties Planned'">0 Properties Planned</span>
+                </div>
+                <h1 class="page-title">MY PLANNED LIST</h1>
+                <p class="page-subtitle">Organize and schedule luxury hotels and retreats you are planning to visit across India</p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a th:href="@{/hotels}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-compass"></i> Find Hotels
+                </a>
+            </div>
+        </div>
+
+        <!-- Notification Message -->
+        <div th:if="${successMessage}" class="alert alert-success" role="alert" style="margin-bottom: 1.5rem; max-width: 860px; margin-left: auto; margin-right: auto;">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${successMessage}">Operation completed successfully.</span>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div th:if="${#lists.isEmpty(plannedHotels)}" class="empty-planned-state empty-planner-state">
+            <div class="empty-icon-circle">
+                <i class="fas fa-bookmark"></i>
+            </div>
+            <h2 class="brand-font" style="font-size: 1.6rem; color: var(--primary-dark); margin-bottom: 0.5rem;">
+                No hotels planned yet.
+            </h2>
+            <p style="font-size: 0.95rem; color: var(--text-muted); max-width: 480px; margin: 0 auto 1.6rem; line-height: 1.6;">
+                Your Planned List is Empty. Save hotels you are planning to visit and find them here later.
+            </p>
+            <a th:href="@{/hotels}" class="btn btn-primary" style="padding: 0.8rem 2rem; font-size: 0.95rem;">
+                <i class="fas fa-compass"></i> Explore Hotels
+            </a>
+        </div>
+
+        <!-- POPULATED PLANNED LIST (Compact Travel Planner Items) -->
+        <div th:if="${not #lists.isEmpty(plannedHotels)}" class="planned-compact-list planner-container">
+            <div th:each="item : ${plannedHotels}" class="planned-compact-item planner-item-card" th:id="'plannedItem-' + ${item.hotel.id}">
+                <div class="planned-compact-info planner-item-main">
+                    <h3 class="planned-hotel-name planner-hotel-name" th:text="${item.hotel.name}">Lalitha Mahal Palace Hotel</h3>
+                    <p class="planned-hotel-location planner-hotel-location">
+                        <i class="fas fa-map-marker-alt" style="color: var(--gold-accent);"></i>
+                        <span th:text="${item.hotel.district} + ', ' + ${item.hotel.state}">Mysuru, Karnataka</span>
+                    </p>
+
+                    <div class="planner-meta-row">
+                        <!-- Planned Stay Dates -->
+                        <div class="planner-meta-item">
+                            <span class="planner-meta-label">Planned Stay:</span>
+                            <span class="planner-meta-val" th:id="'stayDatesText-' + ${item.hotel.id}" th:text="${item.getFormattedPlannedStay()}">Dates not planned</span>
+                            <button type="button" class="btn-edit-dates"
+                                    th:id="'btnEditDates-' + ${item.hotel.id}"
+                                    th:data-hotel-id="${item.hotel.id}"
+                                    th:data-hotel-name="${item.hotel.name}"
+                                    th:data-checkin="${item.plannedCheckInDate != null ? #temporals.format(item.plannedCheckInDate, 'yyyy-MM-dd') : ''}"
+                                    th:data-checkout="${item.plannedCheckOutDate != null ? #temporals.format(item.plannedCheckOutDate, 'yyyy-MM-dd') : ''}"
+                                    onclick="openDateModal(this)"
+                                    title="Set or update planned dates">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span th:text="${item.hasPlannedDates() ? 'Edit Dates' : 'Set Dates'}">Set Dates</span>
+                            </button>
+                        </div>
+
+                        <!-- Current Planning Status -->
+                        <div class="planner-meta-item">
+                            <span class="planner-meta-label">Status:</span>
+                            <span class="status-badge"
+                                  th:id="'statusBadge-' + ${item.hotel.id}"
+                                  th:classappend="${hotelStatusMap != null and hotelStatusMap.get(item.hotel.id) == 'Booked' ? 'status-booked' : (hotelStatusMap != null and hotelStatusMap.get(item.hotel.id) == 'Completed' ? 'status-completed' : 'status-planned')}"
+                                  th:text="${hotelStatusMap != null and hotelStatusMap.containsKey(item.hotel.id) ? hotelStatusMap.get(item.hotel.id) : 'Planned'}">
+                                Planned
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planned Hotel Stay Reminder Countdown (When booking exists) -->
+                <div th:if="${hotelBookingMap != null and hotelBookingMap.containsKey(item.hotel.id)}"
+                     th:with="booking=${hotelBookingMap.get(item.hotel.id)}"
+                     class="booking-reminder-wrap planned-stay-reminder"
+                     th:classappend="${booking.isStayCompleted() ? 'reminder-completed' : (booking.isCurrentStay() ? 'reminder-current-stay' : (booking.isCheckInReached() ? 'reminder-reached' : ''))}"
+                     th:data-checkin-millis="${booking.getCheckInEpochMillis()}"
+                     th:data-checkout-millis="${booking.getCheckOutEpochMillis()}"
+                     th:data-booking-status="${booking.status.name()}"
+                     th:data-server-now="${serverNowMillis}"
+                     style="margin: 0; min-width: 190px; text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+                    <span class="reminder-label" th:text="${booking.getInitialReminderLabel()}">REMINDER</span>
+                    <div class="reminder-countdown" th:text="${booking.getInitialReminderCountdown()}">2 Days 8 Hours 24 Minutes</div>
+                    <span class="reminder-subtext" th:text="${booking.getInitialReminderSubtext()}">until check-in</span>
+                </div>
+
+                <div class="planned-compact-actions planner-item-actions">
+                    <a th:href="@{/hotels(hotelId=${item.hotel.id})}" class="btn btn-outline btn-sm planned-view-btn planner-btn" title="View Hotel">
+                        <i class="fas fa-eye"></i> View Hotel
+                    </a>
+                    <!-- Direct details page link for full compatibility -->
+                    <a th:href="@{/hotels/{id}(id=${item.hotel.id})}" style="display: none;" title="View Hotel Details">
+                        View Details
+                    </a>
+
+                    <!-- Book / Continue to Booking Link (Pre-populated with planned dates if available) -->
+                    <a th:href="@{/bookings/new(hotelId=${item.hotel.id}, checkIn=${item.plannedCheckInDate != null ? #temporals.format(item.plannedCheckInDate, 'yyyy-MM-dd') : null}, checkOut=${item.plannedCheckOutDate != null ? #temporals.format(item.plannedCheckOutDate, 'yyyy-MM-dd') : null})}"
+                       class="btn btn-primary btn-sm planner-btn planned-booking-link"
+                       th:id="'bookBtn-' + ${item.hotel.id}"
+                       title="Book / Continue to Booking">
+                        <i class="fas fa-calendar-check"></i> Book
+                    </a>
+
+                    <!-- Google Maps navigation link -->
+                    <a th:href="${item.hotel.googleMapsUrl != null ? item.hotel.googleMapsUrl : ('https://www.google.com/maps/search/?api=1&query=' + #strings.replace(item.hotel.name + ' ' + item.hotel.district + ' ' + item.hotel.state, ' ', '+'))}"
+                       target="_blank" rel="noopener noreferrer"
+                       class="planned-map-link"
+                       title="View on Google Maps"
+                       style="display: none;">
+                        View on Google Maps
+                    </a>
+
+                    <!-- Remove from Planned List Form -->
+                    <form th:action="@{/guest/planned-list/remove}" method="post" style="margin: 0; display: inline;"
+                          th:onsubmit="'return removePlannedItem(event, ' + ${item.hotel.id} + ');'">
+                        <input type="hidden" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}" />
+                        <input type="hidden" name="hotelId" th:value="${item.hotel.id}">
+                        <input type="hidden" name="returnUrl" value="/guest/planned-list">
+                        <button type="submit" class="btn-remove-item btn-remove-planned" title="Remove from Planned List" aria-label="Remove from Planned List">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Plan Stay Dates Modal -->
+    <div id="planDatesModal" class="date-modal-backdrop" onclick="handleBackdropClick(event)">
+        <div class="date-modal-box">
+            <div class="date-modal-header">
+                <h3 class="date-modal-title" id="modalHotelTitle">Plan Stay Dates</h3>
+                <button type="button" class="date-modal-close" onclick="closeDateModal()" aria-label="Close modal">&times;</button>
+            </div>
+            <form id="planDatesForm" onsubmit="savePlannedDates(event)">
+                <div class="date-modal-body">
+                    <input type="hidden" id="modalHotelId" name="hotelId" value="">
+                    
+                    <div class="date-form-group">
+                        <label for="modalCheckIn"><i class="fas fa-calendar-day" style="color: var(--gold-accent);"></i> Planned Check-in Date</label>
+                        <input type="date" id="modalCheckIn" name="checkIn" onchange="validateDates()">
+                    </div>
+
+                    <div class="date-form-group">
+                        <label for="modalCheckOut"><i class="fas fa-calendar-day" style="color: var(--gold-accent);"></i> Planned Check-out Date</label>
+                        <input type="date" id="modalCheckOut" name="checkOut" onchange="validateDates()">
+                    </div>
+                </div>
+                <div class="date-modal-footer">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="clearPlannedDates()" style="color: #dc2626; border-color: rgba(220, 38, 38, 0.4);">
+                        <i class="fas fa-times"></i> Clear Dates
+                    </button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="closeDateModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save"></i> Save Dates
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <!-- Toast Notification Element -->
+    <div id="plannedToast" style="display: none; position: fixed; bottom: 24px; right: 24px; background: #0a1128; color: #ffffff; border: 1px solid var(--gold-accent); padding: 0.9rem 1.4rem; border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); z-index: 10000; font-size: 0.88rem; align-items: center; gap: 0.65rem;">
+        <i class="fas fa-bookmark" style="color: var(--gold-accent);"></i>
+        <span id="plannedToastText">Updated your Planned List</span>
+    </div>
+
+    <script th:inline="javascript">
+        function showToast(message) {
+            const toast = document.getElementById('plannedToast');
+            const text = document.getElementById('plannedToastText');
+            if (toast && text) {
+                text.textContent = message;
+                toast.style.display = 'inline-flex';
+                toast.style.opacity = '1';
+                setTimeout(() => {
+                    toast.style.transition = 'opacity 0.4s ease';
+                    toast.style.opacity = '0';
+                    setTimeout(() => { toast.style.display = 'none'; }, 400);
+                }, 2800);
+            }
+        }
+
+        let currentActiveBtn = null;
+
+        function openDateModal(btn) {
+            currentActiveBtn = btn;
+            const hotelId = btn.getAttribute('data-hotel-id');
+            const hotelName = btn.getAttribute('data-hotel-name') || 'Hotel';
+            const checkIn = btn.getAttribute('data-checkin') || '';
+            const checkOut = btn.getAttribute('data-checkout') || '';
+
+            document.getElementById('modalHotelId').value = hotelId;
+            document.getElementById('modalHotelTitle').textContent = 'Plan Stay: ' + hotelName;
+            document.getElementById('modalCheckIn').value = checkIn;
+            document.getElementById('modalCheckOut').value = checkOut;
+
+            // Set minimum check-in date as today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('modalCheckIn').min = today;
+            if (checkIn) {
+                document.getElementById('modalCheckOut').min = checkIn;
+            } else {
+                document.getElementById('modalCheckOut').min = today;
+            }
+
+            document.getElementById('planDatesModal').classList.add('open');
+        }
+
+        function closeDateModal() {
+            document.getElementById('planDatesModal').classList.remove('open');
+        }
+
+        function handleBackdropClick(event) {
+            if (event.target === document.getElementById('planDatesModal')) {
+                closeDateModal();
+            }
+        }
+
+        function validateDates() {
+            const checkIn = document.getElementById('modalCheckIn').value;
+            const checkOutInput = document.getElementById('modalCheckOut');
+            if (checkIn) {
+                checkOutInput.min = checkIn;
+                if (checkOutInput.value && checkOutInput.value < checkIn) {
+                    checkOutInput.value = '';
+                }
+            }
+        }
+
+        async function savePlannedDates(event) {
+            event.preventDefault();
+            const hotelId = document.getElementById('modalHotelId').value;
+            const checkIn = document.getElementById('modalCheckIn').value;
+            const checkOut = document.getElementById('modalCheckOut').value;
+            const csrfToken = document.querySelector('input[name="_csrf"]')?.value || '';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('hotelId', hotelId);
+                if (checkIn) formData.append('checkIn', checkIn);
+                if (checkOut) formData.append('checkOut', checkOut);
+
+                const response = await fetch('/guest/planned-list/update-dates', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: formData.toString()
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    closeDateModal();
+                    showToast(data.message || 'Planned stay dates updated');
+
+                    // Update UI text
+                    const stayTextEl = document.getElementById('stayDatesText-' + hotelId);
+                    if (stayTextEl) {
+                        stayTextEl.textContent = data.formattedStay;
+                    }
+
+                    // Update button data attributes
+                    const btn = document.getElementById('btnEditDates-' + hotelId);
+                    if (btn) {
+                        btn.setAttribute('data-checkin', data.checkIn || '');
+                        btn.setAttribute('data-checkout', data.checkOut || '');
+                        const labelSpan = btn.querySelector('span');
+                        if (labelSpan) {
+                            labelSpan.textContent = (data.checkIn || data.checkOut) ? 'Edit Dates' : 'Set Dates';
+                        }
+                    }
+
+                    // Update booking button URL with dates
+                    const bookBtn = document.getElementById('bookBtn-' + hotelId);
+                    if (bookBtn) {
+                        let bookUrl = '/bookings/new?hotelId=' + hotelId;
+                        if (data.checkIn) bookUrl += '&checkIn=' + encodeURIComponent(data.checkIn);
+                        if (data.checkOut) bookUrl += '&checkOut=' + encodeURIComponent(data.checkOut);
+                        bookBtn.setAttribute('href', bookUrl);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to update planned dates:', err);
+                showToast('Failed to update dates');
+            }
+        }
+
+        async function clearPlannedDates() {
+            document.getElementById('modalCheckIn').value = '';
+            document.getElementById('modalCheckOut').value = '';
+            const fakeEvent = { preventDefault: () => {} };
+            await savePlannedDates(fakeEvent);
+        }
+
+        async function removePlannedItem(event, hotelId) {
+            if (window.fetch) {
+                event.preventDefault();
+                try {
+                    const csrfToken = document.querySelector('input[name="_csrf"]')?.value || '';
+                    const formData = new URLSearchParams();
+                    formData.append('hotelId', hotelId);
+
+                    const response = await fetch('/guest/planned-list/toggle', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: formData.toString()
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        showToast(data.message || 'Removed from your Planned List');
+                        const item = document.getElementById('plannedItem-' + hotelId);
+                        if (item) {
+                            item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                            item.style.opacity = '0';
+                            item.style.transform = 'scale(0.95)';
+                            setTimeout(() => {
+                                item.remove();
+                                const remaining = document.querySelectorAll('.planned-compact-item');
+                                if (remaining.length === 0) {
+                                    window.location.reload();
+                                }
+                            }, 320);
+                        }
+                        return false;
+                    }
+                } catch (e) {
+                    console.error('Error removing planned hotel:', e);
+                }
+            }
+            return true;
+        }
+
+        (function() {
+            var reminderElements = document.querySelectorAll('.planned-stay-reminder[data-checkin-millis]');
+            if (!reminderElements.length) return;
+
+            var clientStart = Date.now();
+            var firstServerNow = reminderElements[0].getAttribute('data-server-now');
+            var serverBase = firstServerNow ? parseInt(firstServerNow, 10) : clientStart;
+            var serverOffset = clientStart - serverBase;
+
+            function updatePlannedCountdowns() {
+                var currentServerTime = Date.now() - serverOffset;
+                reminderElements.forEach(function(el) {
+                    var checkInMillis = parseInt(el.getAttribute('data-checkin-millis'), 10);
+                    var checkOutMillis = parseInt(el.getAttribute('data-checkout-millis'), 10);
+                    var status = el.getAttribute('data-booking-status') || '';
+                    if (!checkInMillis || isNaN(checkInMillis)) return;
+
+                    var labelEl = el.querySelector('.reminder-label');
+                    var countdownEl = el.querySelector('.reminder-countdown');
+                    var subtextEl = el.querySelector('.reminder-subtext');
+
+                    // 1. Stay completed
+                    if (status === 'COMPLETED' || status === 'CHECKED_OUT' || (checkOutMillis && currentServerTime >= checkOutMillis)) {
+                        if (labelEl) labelEl.textContent = 'STAY COMPLETED';
+                        if (countdownEl) countdownEl.textContent = 'Completed';
+                        if (subtextEl) subtextEl.textContent = 'No active countdown';
+                        el.classList.remove('reminder-current-stay');
+                        el.classList.remove('reminder-reached');
+                        el.classList.add('reminder-completed');
+                        return;
+                    }
+
+                    // 2. Check-in reached / Current stay -> Countdown to check-out
+                    var isCurrentStay = (status === 'CHECKED_IN') || (currentServerTime >= checkInMillis);
+                    if (isCurrentStay) {
+                        if (labelEl) labelEl.textContent = 'CHECK-OUT REMINDER';
+                        el.classList.add('reminder-current-stay');
+                        el.classList.remove('reminder-reached');
+                        el.classList.remove('reminder-completed');
+
+                        if (checkOutMillis) {
+                            var diffSec = Math.floor((checkOutMillis - currentServerTime) / 1000);
+                            if (diffSec <= 0) {
+                                if (labelEl) labelEl.textContent = 'STAY COMPLETED';
+                                if (countdownEl) countdownEl.textContent = 'Completed';
+                                if (subtextEl) subtextEl.textContent = 'No active countdown';
+                                el.classList.remove('reminder-current-stay');
+                                el.classList.add('reminder-completed');
+                            } else {
+                                var days = Math.floor(diffSec / 86400);
+                                var hours = Math.floor((diffSec % 86400) / 3600);
+                                var minutes = Math.floor((diffSec % 3600) / 60);
+                                var dayLabel = days === 1 ? 'Day' : 'Days';
+                                var text = days + ' ' + dayLabel + ' ' + hours + ' Hours ' + minutes + ' Minutes';
+                                if (countdownEl) countdownEl.textContent = text;
+                                if (subtextEl) subtextEl.textContent = 'until check-out';
+                            }
+                        } else {
+                            if (countdownEl) countdownEl.textContent = 'Checked In';
+                            if (subtextEl) subtextEl.textContent = 'until check-out';
+                        }
+                    } else {
+                        // 3. Before check-in -> Countdown to check-in
+                        if (labelEl) labelEl.textContent = 'REMINDER';
+                        el.classList.remove('reminder-current-stay');
+                        el.classList.remove('reminder-completed');
+
+                        var diffSec = Math.floor((checkInMillis - currentServerTime) / 1000);
+                        if (diffSec <= 0) {
+                            if (countdownEl) countdownEl.textContent = 'Check-in time reached';
+                            if (subtextEl) subtextEl.textContent = 'until check-out';
+                        } else {
+                            var days = Math.floor(diffSec / 86400);
+                            var hours = Math.floor((diffSec % 86400) / 3600);
+                            var minutes = Math.floor((diffSec % 3600) / 60);
+                            var dayLabel = days === 1 ? 'Day' : 'Days';
+                            var text = days + ' ' + dayLabel + ' ' + hours + ' Hours ' + minutes + ' Minutes';
+                            if (countdownEl) countdownEl.textContent = text;
+                            if (subtextEl) subtextEl.textContent = 'until check-in';
+                        }
+                    }
+                });
+            }
+
+            updatePlannedCountdowns();
+            var intervalId = setInterval(updatePlannedCountdowns, 1000);
+            window.addEventListener('beforeunload', function() {
+                clearInterval(intervalId);
+            });
+        })();
+    </script>
+</body>
+</html>

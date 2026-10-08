@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 Access Denied | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper" style="display: flex; justify-content: center; align-items: center; min-height: 70vh; padding: 2rem 1rem;">
+        <div style="max-width: 520px; width: 100%; text-align: center;">
+            <div class="card" style="border-top: 4px solid var(--danger); box-shadow: var(--shadow-lg); padding: 2.5rem 2rem;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: #fee2e2; color: var(--danger); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem;">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h1 class="brand-font" style="font-size: 1.75rem; color: var(--danger); margin-bottom: 0.5rem;">403 — Access Denied</h1>
+                <h3 style="font-size: 1.1rem; color: var(--text-dark); margin-bottom: 1rem;">Unauthorized Portal Access</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 2rem;">
+                    Your account does not possess the required security credentials or role privileges to view this page.
+                    Spring Security role-based access control enforces isolation between Guest, Staff, and Executive Admin areas.
+                </p>
+
+                <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+                    <a th:href="@{/}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+
+                    <!-- Return to Role-Specific Dashboard -->
+                    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/dashboard}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-user-shield"></i> Return to Admin Dashboard
+                    </a>
+                    <a sec:authorize="hasRole('STAFF')" th:href="@{/staff/dashboard}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-id-badge"></i> Return to Staff Dashboard
+                    </a>
+                    <a sec:authorize="hasRole('GUEST')" th:href="@{/guest/dashboard}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-user"></i> Return to Guest Dashboard
+                    </a>
+                    <a sec:authorize="isAnonymous()" th:href="@{/login}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-sign-in-alt"></i> Sign In to Portal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

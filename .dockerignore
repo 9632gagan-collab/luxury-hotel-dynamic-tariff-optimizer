@@ -1,0 +1,10 @@
+target/
+.git/
+.vscode/
+*.log
+*.tmp
+*.py
+*.txt
+*.json
+scratch/
+.env

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<th:block th:fragment="headerNav">
+    <header class="navbar" id="mainHeaderNavbar">
+        <div class="navbar-header-bar">
+            <a th:href="@{/}" class="nav-brand">
+                <canvas class="brand-logo-img royal-animated-logo" width="512" height="512" role="img" aria-label="Royal Indian Stays Logo"></canvas>
+                <div class="brand-text-container">
+                    <span class="brand-text">ROYAL INDIAN STAYS</span>
+                    <span class="brand-sub">DISCOVER LUXURY ACROSS INDIA</span>
+                </div>
+            </a>
+
+            <!-- Mobile Quick Actions & Hamburger Menu Toggle (Only rendered/visible on mobile/tablet) -->
+            <div class="mobile-header-actions">
+                <!-- Admin Mobile Quick Communication Icons -->
+                <th:block sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin/notifications}" class="mobile-header-icon-btn" title="Admin Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}" th:text="${unreadNotificationCount}">0</span>
+                    </a>
+                    <a th:href="@{/admin/messages/inbox}" class="mobile-header-icon-btn" title="Staff Communications &amp; Requests">
+                        <i class="fas fa-envelope"></i>
+                        <span class="notification-badge badge-info" th:if="${unreadMessageCount != null and unreadMessageCount > 0}" th:text="${unreadMessageCount}">0</span>
+                    </a>
+                </th:block>
+
+                <!-- Staff Mobile Quick Communication Icons -->
+                <th:block sec:authorize="hasRole('STAFF')">
+                    <a th:href="@{/staff/notifications}" class="mobile-header-icon-btn" title="Staff Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}" th:text="${unreadNotificationCount}">0</span>
+                    </a>
+                    <a th:href="@{/staff/messages/inbox}" class="mobile-header-icon-btn" title="Staff Messages &amp; Requests">
+                        <i class="fas fa-envelope"></i>
+                        <span class="notification-badge badge-info" th:if="${unreadMessageCount != null and unreadMessageCount > 0}" th:text="${unreadMessageCount}">0</span>
+                    </a>
+                </th:block>
+
+                <!-- Accessible Hamburger Button -->
+                <button type="button" class="mobile-menu-btn" id="mobileNavToggleBtn" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMobileNavMenu()">
+                    <span class="hamburger-icon-bar"></span>
+                    <span class="hamburger-icon-bar"></span>
+                    <span class="hamburger-icon-bar"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Drawer & Desktop Menu Wrapper -->
+        <div class="nav-menu-wrapper" id="navMenuWrapper">
+            <!-- Role-Specific Portal Indicator for Authenticated Users -->
+            <div class="portal-switch" sec:authorize="isAuthenticated()">
+                <span sec:authorize="hasRole('ADMIN')" class="portal-pill active" style="background: var(--gold-accent); color: var(--primary-dark); font-weight: 700;">
+                    <i class="fas fa-user-shield"></i> Admin Portal
+                </span>
+                <span sec:authorize="hasRole('STAFF')" class="portal-pill active" style="background: var(--info); color: #ffffff; font-weight: 700;">
+                    <i class="fas fa-id-badge"></i> Staff Portal
+                </span>
+                <span sec:authorize="hasRole('GUEST')" class="portal-pill active" style="background: var(--success); color: #ffffff; font-weight: 700;">
+                    <i class="fas fa-user"></i> Guest Portal
+                </span>
+                <!-- Subtle Demo Mode Indicator & Switcher -->
+                <span th:if="${session != null and session.DEMO_MODE == true}" class="badge demo-nav-badge" style="background: rgba(200, 155, 60, 0.18); color: var(--gold-accent); border: 1px solid var(--gold-accent); font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; letter-spacing: 0.5px;">
+                    <i class="fas fa-flask"></i> DEMO MODE
+                </span>
+                <a th:if="${session != null and session.DEMO_MODE == true}" th:href="@{/demo}" class="btn btn-outline btn-xs demo-switch-btn" style="font-size: 0.72rem; padding: 2px 7px; border-color: var(--gold-accent); color: var(--gold-accent); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600;" title="Switch to another demo role">
+                    <i class="fas fa-exchange-alt"></i> Switch Demo Role
+                </a>
+            </div>
+
+            <!-- Navigation Links -->
+            <ul class="nav-links">
+                <!--/* 1. ADMIN ROLE SPECIFIC NAVIGATION: Home -> Check Hotels -> Districts -> Offers -> Dashboard -> Profile */-->
+                <th:block sec:authorize="hasRole('ADMIN')">
+                    <li><a th:href="@{/}" class="nav-link" th:classappend="${activeNav == 'home'} ? 'active' : ''"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a th:href="@{/admin/check-hotels}" class="nav-link" th:classappend="${activeNav == 'check-hotels'} ? 'active' : ''"><i class="fas fa-hotel"></i> Check Hotels</a></li>
+                    <li><a th:href="@{/admin/districts}" class="nav-link" th:classappend="${activeNav == 'districts'} ? 'active' : ''"><i class="fas fa-map-marked-alt"></i> Districts</a></li>
+                    <li><a th:href="@{/admin/offers}" class="nav-link" th:classappend="${activeNav == 'offers'} ? 'active' : ''"><i class="fas fa-tag"></i> Offers</a></li>
+                    <li><a th:href="@{/admin/dashboard}" class="nav-link" th:classappend="${activeNav == 'dashboard'} ? 'active' : ''"><i class="fas fa-th-large"></i> Dashboard</a></li>
+                    <li><a th:href="@{/admin/profile}" class="nav-link" th:classappend="${activeNav == 'profile'} ? 'active' : ''"><i class="fas fa-user-circle"></i> Profile</a></li>
+
+                    <!-- Quick Access Communication Icons for Admin -->
+                    <li>
+                        <a th:href="@{/admin/notifications}" class="nav-link" th:classappend="${activeNav == 'notifications'} ? 'active' : ''" title="Admin Notifications" style="position: relative;">
+                            <i class="fas fa-bell"></i> <span>Notifications</span>
+                            <span class="notification-badge" style="background: var(--gold-accent); color: var(--primary-dark); font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 10px; margin-left: 4px;"
+                                  th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}" th:text="${unreadNotificationCount}">0</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/messages/inbox}" class="nav-link" th:classappend="${activeNav == 'messages' or activeNav == 'requests'} ? 'active' : ''" title="Staff Communications &amp; Requests" style="position: relative;">
+                            <i class="fas fa-envelope"></i> <span>Messages</span>
+                            <span class="notification-badge" style="background: var(--info); color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 10px; margin-left: 4px;"
+                                  th:if="${unreadMessageCount != null and unreadMessageCount > 0}" th:text="${unreadMessageCount}">0</span>
+                        </a>
+                    </li>
+                </th:block>
+
+                <!--/* 2. STAFF ROLE SPECIFIC NAVIGATION: Home -> Check Rooms -> Offers -> Dashboard -> Profile */-->
+                <th:block sec:authorize="hasRole('STAFF')">
+                    <li><a th:href="@{/}" class="nav-link" th:classappend="${activeNav == 'home'} ? 'active' : ''"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a th:href="@{/staff/check-rooms}" class="nav-link" th:classappend="${activeNav == 'check-rooms' or activeNav == 'room-status'} ? 'active' : ''"><i class="fas fa-door-open"></i> Check Rooms</a></li>
+                    <li><a th:href="@{/staff/offers}" class="nav-link" th:classappend="${activeNav == 'offers'} ? 'active' : ''"><i class="fas fa-tag"></i> Offers</a></li>
+                    <li><a th:href="@{/staff/dashboard}" class="nav-link" th:classappend="${activeNav == 'dashboard'} ? 'active' : ''"><i class="fas fa-th-large"></i> Dashboard</a></li>
+                    <li><a th:href="@{/staff/profile}" class="nav-link" th:classappend="${activeNav == 'profile'} ? 'active' : ''"><i class="fas fa-user-circle"></i> Profile</a></li>
+
+                    <!-- Quick Access Communication Icons for Staff -->
+                    <li>
+                        <a th:href="@{/staff/notifications}" class="nav-link" th:classappend="${activeNav == 'notifications'} ? 'active' : ''" title="Staff Notifications" style="position: relative;">
+                            <i class="fas fa-bell"></i> <span>Notifications</span>
+                            <span class="notification-badge" style="background: var(--gold-accent); color: var(--primary-dark); font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 10px; margin-left: 4px;"
+                                  th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}" th:text="${unreadNotificationCount}">0</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/staff/messages/inbox}" class="nav-link" th:classappend="${activeNav == 'messages'} ? 'active' : ''" title="Staff Messages &amp; Requests" style="position: relative;">
+                            <i class="fas fa-envelope"></i> <span>Messages</span>
+                            <span class="notification-badge" style="background: var(--info); color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 10px; margin-left: 4px;"
+                                  th:if="${unreadMessageCount != null and unreadMessageCount > 0}" th:text="${unreadMessageCount}">0</span>
+                        </a>
+                    </li>
+                </th:block>
+
+                <!--/* 3. GUEST ROLE SPECIFIC NAVIGATION: Home -> Find Hotels -> Explore India Map -> Districts -> Offers -> Dashboard -> Profile */-->
+                <th:block sec:authorize="hasRole('GUEST')">
+                    <li><a th:href="@{/}" class="nav-link" th:classappend="${activeNav == 'home'} ? 'active' : ''"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a th:href="@{/hotels}" class="nav-link" th:classappend="${activeNav == 'hotels'} ? 'active' : ''"><i class="fas fa-hotel"></i> Find Hotels</a></li>
+                    <li><a th:href="@{/map}" class="nav-link" th:classappend="${activeNav == 'map'} ? 'active' : ''"><i class="fas fa-map-marked-alt"></i> Explore India Map</a></li>
+                    <li><a th:href="@{/guest/districts}" class="nav-link" th:classappend="${activeNav == 'districts'} ? 'active' : ''"><i class="fas fa-map-marked-alt"></i> Districts</a></li>
+                    <li><a th:href="@{/guest/offers}" class="nav-link" th:classappend="${activeNav == 'offers'} ? 'active' : ''"><i class="fas fa-tag"></i> Offers</a></li>
+                    <li><a th:href="@{/guest/dashboard}" class="nav-link" th:classappend="${activeNav == 'dashboard'} ? 'active' : ''"><i class="fas fa-th-large"></i> Dashboard</a></li>
+                    <li><a th:href="@{/guest/profile}" class="nav-link" th:classappend="${activeNav == 'profile'} ? 'active' : ''"><i class="fas fa-user-circle"></i> Profile</a></li>
+                </th:block>
+
+                <!--/* 4. ANONYMOUS GUEST NAVIGATION: Home -> Find Hotels -> Explore India Map -> Demo Mode -> Register -> Sign In -> Staff/Admin Access */-->
+                <th:block sec:authorize="isAnonymous()">
+                    <li><a th:href="@{/}" class="nav-link"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a th:href="@{/hotels}" class="nav-link"><i class="fas fa-hotel"></i> Find Hotels</a></li>
+                    <li><a th:href="@{/map}" class="nav-link"><i class="fas fa-map-marked-alt"></i> Explore India Map</a></li>
+                    <li><a th:href="@{/demo}" class="nav-link" style="color: var(--gold-accent); font-weight: 600;"><i class="fas fa-flask"></i> Demo Mode</a></li>
+                    <li><a th:href="@{/register}" class="nav-link"><i class="fas fa-user-plus"></i> Register</a></li>
+                    <li><a th:href="@{/login(role='GUEST')}" class="btn btn-primary btn-sm nav-signin-btn"><i class="fas fa-sign-in-alt"></i> Sign In</a></li>
+                    <li class="dropdown staff-admin-dropdown" style="position: relative;">
+                        <button type="button" class="btn btn-outline btn-sm" id="staffAdminToggle" onclick="toggleStaffAdminMenu()" style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; border-color: rgba(200, 155, 60, 0.45); cursor: pointer;">
+                            <i class="fas fa-lock" style="color: var(--gold-accent);"></i> Staff &amp; Admin Access <i class="fas fa-chevron-down" style="font-size: 0.65rem;"></i>
+                        </button>
+                        <div id="staffAdminMenu" class="staff-admin-menu" style="display: none; position: absolute; right: 0; top: calc(100% + 6px); background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); min-width: 175px; z-index: 1000; overflow: hidden;">
+                            <a th:href="@{/login(role='STAFF')}" style="display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 1rem; color: var(--primary-dark); text-decoration: none; font-size: 0.82rem; border-bottom: 1px solid var(--border-color); background: #ffffff;">
+                                <i class="fas fa-id-badge" style="color: var(--info);"></i> Staff Login
+                            </a>
+                            <a th:href="@{/login(role='ADMIN')}" style="display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 1rem; color: var(--primary-dark); text-decoration: none; font-size: 0.82rem; border-bottom: 1px solid var(--border-color); background: #ffffff;">
+                                <i class="fas fa-user-shield" style="color: var(--gold-accent);"></i> Admin Login
+                            </a>
+                            <a th:href="@{/demo}" style="display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 1rem; color: var(--gold-dark); text-decoration: none; font-size: 0.82rem; background: rgba(200, 155, 60, 0.08); font-weight: 600;">
+                                <i class="fas fa-flask" style="color: var(--gold-accent);"></i> Explore Demo Mode
+                            </a>
+                        </div>
+                    </li>
+                </th:block>
+
+                <!--/* Logout for all Authenticated Users */-->
+                <li sec:authorize="isAuthenticated()" class="nav-logout-item">
+                    <form th:action="@{/logout}" method="post" style="display: inline; margin: 0; width: 100%;">
+                        <input type="hidden" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}" />
+                        <button type="submit" class="btn btn-outline btn-sm nav-logout-btn" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.4); cursor: pointer;">
+                            <i class="fas fa-sign-out-alt"></i> Logout (<span sec:authentication="name">User</span>)
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div class="mobile-nav-backdrop" id="mobileNavBackdrop" onclick="closeMobileNavMenu()"></div>
+    </header>
+
+    <script>
+        function toggleStaffAdminMenu() {
+            var menu = document.getElementById('staffAdminMenu');
+            if (menu) {
+                menu.style.display = (menu.style.display === 'none' || menu.style.display === '') ? 'block' : 'none';
+            }
+        }
+        function toggleMobileNavMenu() {
+            var header = document.getElementById('mainHeaderNavbar');
+            var btn = document.getElementById('mobileNavToggleBtn');
+            if (header) {
+                var isOpen = header.classList.toggle('menu-open');
+                if (btn) {
+                    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                }
+            }
+        }
+        function closeMobileNavMenu() {
+            var header = document.getElementById('mainHeaderNavbar');
+            var btn = document.getElementById('mobileNavToggleBtn');
+            if (header && header.classList.contains('menu-open')) {
+                header.classList.remove('menu-open');
+                if (btn) {
+                    btn.setAttribute('aria-expanded', 'false');
+                }
+            }
+        }
+        document.addEventListener('click', function(event) {
+            var toggle = document.getElementById('staffAdminToggle');
+            var menu = document.getElementById('staffAdminMenu');
+            if (toggle && menu && !toggle.contains(event.target) && !menu.contains(event.target)) {
+                menu.style.display = 'none';
+            }
+            // Auto close mobile drawer when clicking any link inside it
+            var link = event.target.closest('.nav-links a');
+            if (link && window.innerWidth < 992) {
+                closeMobileNavMenu();
+            }
+        });
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeMobileNavMenu();
+                var menu = document.getElementById('staffAdminMenu');
+                if (menu) menu.style.display = 'none';
+            }
+        });
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 992) {
+                closeMobileNavMenu();
+            }
+        });
+
+        // Progressive Web App (PWA) Registration & Mobile Shell Support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                // Ensure manifest is linked if not already present in head
+                if (!document.querySelector('link[rel="manifest"]')) {
+                    var manifestLink = document.createElement('link');
+                    manifestLink.rel = 'manifest';
+                    manifestLink.href = '/manifest.json';
+                    document.head.appendChild(manifestLink);
+                }
+                // Register Service Worker for offline asset caching
+                navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                    console.debug('ServiceWorker registration optional notice:', err);
+                });
+            });
+        }
+    </script>
+    <script th:src="@{/js/home-background-animation.js}" defer></script>
+    <script th:src="@{/js/luxury-tab-motion.js}" defer></script>
+    <script th:src="@{/js/logo-animation.js}" defer></script>
+</th:block>
+</html>

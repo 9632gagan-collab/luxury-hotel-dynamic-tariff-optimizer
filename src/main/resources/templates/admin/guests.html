@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Directory | Executive Administration</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Registered Guests Directory</h1>
+                <p class="page-subtitle">Hotel customer accounts registered through the guest portal</p>
+            </div>
+            <div class="page-actions">
+                <span class="badge badge-info" th:text="${#lists.size(guestList)} + ' Total Guests'">0 Total Guests</span>
+            </div>
+        </div>
+
+        <!-- Admin Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/admin/dashboard}" class="sub-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/admin/staff/add}" class="sub-nav-item"><i class="fas fa-user-plus"></i> Add Staff</a>
+            <a th:href="@{/admin/staff}" class="sub-nav-item"><i class="fas fa-users-cog"></i> Staff List</a>
+            <a th:href="@{/admin/guests}" class="sub-nav-item active"><i class="fas fa-user-friends"></i> Guest List</a>
+            <a th:href="@{/admin/profile}" class="sub-nav-item"><i class="fas fa-id-card"></i> Admin Profile</a>
+        </nav>
+
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title"><i class="fas fa-users" style="color: var(--gold-accent);"></i> Hotel Customer Ledger</h3>
+                    <p class="card-subtitle">Self-registered customer accounts</p>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(guestList)}" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                    <i class="fas fa-user-clock" style="font-size: 3rem; margin-bottom: 0.75rem; color: #cbd5e1;"></i>
+                    <h3>No Guests Registered Yet</h3>
+                    <p style="margin-top: 0.25rem;">Customers create their accounts through the public Guest Registration page.</p>
+                </div>
+
+                <div th:if="${not #lists.isEmpty(guestList)}" class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Guest Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Created Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="guest, iterStat : ${guestList}">
+                                <td th:text="${iterStat.count}">1</td>
+                                <td>
+                                    <strong style="color: var(--primary-dark); font-size: 0.95rem;" th:text="${guest.username}">Guest Name</strong>
+                                    <div th:if="${guest.fullName != null and guest.fullName != guest.username}" style="font-size: 0.8rem; color: var(--text-muted);" th:text="${guest.fullName}">Full Name</div>
+                                </td>
+                                <td>
+                                    <span style="color: var(--primary-navy);" th:text="${guest.email}">guest@example.com</span>
+                                </td>
+                                <td>
+                                    <span class="badge" style="background: #f0fdf4; color: #15803d; font-weight: 600;">GUEST</span>
+                                </td>
+                                <td>
+                                    <span th:if="${guest.status != null and guest.status.name() == 'ACTIVE'}" class="badge-active">
+                                        <i class="fas fa-check-circle"></i> ACTIVE
+                                    </span>
+                                    <span th:unless="${guest.status != null and guest.status.name() == 'ACTIVE'}" class="badge-inactive">
+                                        <i class="fas fa-ban"></i> INACTIVE
+                                    </span>
+                                </td>
+                                <td>
+                                    <span th:text="${#temporals.format(guest.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

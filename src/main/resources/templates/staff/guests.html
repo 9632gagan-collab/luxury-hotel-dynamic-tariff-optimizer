@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Directory | Staff Desk</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Registered Guest Directory</h1>
+                <p class="page-subtitle">Access guest profiles, loyalty tiers, and preference records</p>
+            </div>
+        </div>
+
+        <!-- Staff Sub Navigation -->
+        <nav class="sub-navbar">
+            <a href="/staff/dashboard" class="sub-nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="/staff/bookings" class="sub-nav-item"><i class="fas fa-calendar-check"></i> Bookings</a>
+            <a href="/staff/guests" class="sub-nav-item active"><i class="fas fa-users"></i> Guests</a>
+            <a href="/staff/room-status" class="sub-nav-item"><i class="fas fa-door-open"></i> Room Status</a>
+        </nav>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title brand-font"><i class="fas fa-address-book"></i> Guest Register</h3>
+                <span class="badge badge-info" th:text="${#lists.size(guests)} + ' Total Guests'">1 Total Guest</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Guest Name</th>
+                                <th>Contact Information</th>
+                                <th>Passport / ID</th>
+                                <th>Nationality</th>
+                                <th>Loyalty Points</th>
+                                <th>Account Status</th>
+                                <th>Preferences Attached</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="guest : ${guests}">
+                                <td>
+                                    <strong style="color: var(--primary-dark);" th:text="${guest.fullName}">Alex Morgan</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="'@' + ${guest.username}">@alex_morgan</div>
+                                </td>
+                                <td>
+                                    <div th:text="${guest.email}">alex@example.com</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="${guest.phoneNumber}">+91 9876543210</div>
+                                </td>
+                                <td><code th:text="${guest.identificationNumber}">IND-P987654</code></td>
+                                <td th:text="${guest.nationality}">Indian</td>
+                                <td>
+                                    <span class="badge badge-warning" th:text="${guest.loyaltyPoints} + ' Pts'">2,450 Pts</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-success" th:if="${guest.active}">Active</span>
+                                    <span class="badge badge-danger" th:unless="${guest.active}">Inactive</span>
+                                </td>
+                                <td>
+                                    <span th:if="${guest.preference != null}" class="badge badge-info">
+                                        <i class="fas fa-check"></i> <span th:text="${guest.preference.preferredCategory}">SUITE</span>
+                                    </span>
+                                    <span th:unless="${guest.preference != null}" class="badge badge-secondary">Default</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

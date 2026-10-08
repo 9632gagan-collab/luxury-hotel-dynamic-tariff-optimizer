@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore India on Map | Interactive Luxury Stay Discovery</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .map-hotel-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            transition: all 0.2s ease;
+            margin-bottom: 0.85rem;
+        }
+        .map-hotel-card:hover {
+            border-color: var(--gold-accent);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .map-hotel-img {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <!-- Page Header -->
+        <div class="page-header" style="margin-bottom: 2rem;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                    <span class="badge" style="background: rgba(197, 160, 89, 0.15); color: var(--gold-accent); font-weight: 700; font-size: 0.75rem; padding: 0.25rem 0.65rem; border-radius: var(--radius-full);">
+                        <i class="fas fa-map-marked-alt"></i> Spatial Discovery Dashboard
+                    </span>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">&bull; Project P68 India Exploration</span>
+                </div>
+                <h1 class="page-title">Explore India on Map</h1>
+                <p class="page-subtitle">Interactive spatial exploration of verified luxury hotels and retreats across Indian States &amp; Union Territories</p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.5rem;">
+                <a th:href="@{/hotels}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-search"></i> Find Hotels
+                </a>
+                <a th:href="@{/guest/dashboard}" sec:authorize="hasRole('GUEST')" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Interactive Map Dashboard (Requirement 3) -->
+        <div class="map-dashboard-grid" style="grid-template-columns: 1.15fr 1fr;">
+            <!-- Left Column: Interactive Vector Map -->
+            <div>
+                <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <span style="font-size: 0.85rem; color: var(--text-dark); font-weight: 600;">
+                        <i class="fas fa-mouse-pointer" style="color: var(--gold-accent);"></i> Click any state below to view verified stays &amp; districts
+                    </span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">
+                        15 States &bull; 63 Luxury Properties
+                    </span>
+                </div>
+
+                <!-- SVG Map Fragment -->
+                <div th:replace="~{fragments/india-map-svg :: indiaMapSvg}"></div>
+            </div>
+
+            <!-- Right Column: State & District Hotel Explorer Panel -->
+            <div class="state-detail-panel" id="mapExplorerPanel">
+                <!-- State Header -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--gold-accent); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--gold-accent); letter-spacing: 0.05em;">
+                            Active State Explorer
+                        </span>
+                        <h2 class="brand-font" id="mapStateTitle" style="font-size: 1.75rem; color: var(--primary-dark); margin: 0.2rem 0;" th:text="${activeState}">
+                            Karnataka
+                        </h2>
+                        <span style="font-size: 0.82rem; color: var(--text-muted);" id="mapStateSubtitle">
+                            Verified luxury properties across Karnataka districts
+                        </span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="badge" id="mapHotelCountBadge" style="background: rgba(10, 17, 40, 0.9); color: var(--gold-accent); padding: 0.35rem 0.75rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 700; border: 1px solid var(--gold-accent);">
+                            <span id="mapHotelCountNumber">10</span> Hotels
+                        </span>
+                    </div>
+                </div>
+
+                <!-- District Selector (Requirement 3: Then allow district selection) -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label class="form-label" style="font-weight: 700; color: var(--primary-dark); font-size: 0.82rem;">
+                        <i class="fas fa-map-pin" style="color: var(--gold-accent);"></i> Filter by District in <span id="labelStateName" th:text="${activeState}">Karnataka</span>:
+                    </label>
+                    <div class="district-pill-selector" id="mapDistrictSelector">
+                        <button type="button" class="district-btn active" onclick="filterByDistrict('ALL')">All Districts</button>
+                        <!-- Injected dynamically via JS on state click -->
+                    </div>
+                </div>
+
+                <!-- Hotel List Container (Requirement 3: Then display hotels in that district) -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <span style="font-size: 0.78rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em;">
+                            Verified Properties in <span id="currentDistrictLabel">All Districts</span>
+                        </span>
+                        <a id="searchLinkForState" th:href="@{/hotels(state=${activeState})}" style="font-size: 0.78rem; color: var(--gold-accent); text-decoration: none; font-weight: 600;">
+                            Open in Find Hotels <i class="fas fa-external-link-alt" style="font-size: 0.68rem;"></i>
+                        </a>
+                    </div>
+
+                    <!-- Scrollable Hotel Cards Area -->
+                    <div id="mapHotelsList" style="max-height: 480px; overflow-y: auto; padding-right: 0.35rem;">
+                        <div th:each="hotel : ${stateHotels}" class="map-hotel-card" th:attr="data-district=${hotel.district}">
+                            <img th:src="${hotel.imageUrl}" th:alt="${hotel.name}" class="map-hotel-img">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                                    <span style="font-size: 0.72rem; font-weight: 700; color: var(--gold-accent);" th:text="${hotel.brand}">Brand</span>
+                                    <span style="font-size: 0.75rem; color: var(--gold-accent); font-weight: 700;"><i class="fas fa-star"></i> <span th:text="${hotel.rating}">4.9</span></span>
+                                </div>
+                                <h4 class="brand-font" style="font-size: 0.95rem; color: var(--primary-dark); margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${hotel.name}">Hotel Name</h4>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+                                    <i class="fas fa-map-pin"></i> <span th:text="${hotel.district}">District</span> &bull; <span th:text="${hotel.city != null ? hotel.city : hotel.cityLocation}">City</span>
+                                </div>
+                                <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                                    <a th:href="@{/hotels/{id}(id=${hotel.id})}" class="btn btn-primary btn-sm" style="font-size: 0.72rem; padding: 0.25rem 0.65rem;">
+                                        Details
+                                    </a>
+                                    <button type="button" class="btn-planned-toggle"
+                                            th:attr="data-hotel-id=${hotel.id}, data-planned=${#sets.contains(plannedHotelIds, hotel.id)}"
+                                            th:classappend="${#sets.contains(plannedHotelIds, hotel.id)} ? 'planned-active' : ''"
+                                            onclick="togglePlannedHotel(this)"
+                                            title="Add to Planned List"
+                                            aria-label="Add to Planned List">
+                                        <i th:class="${#sets.contains(plannedHotelIds, hotel.id)} ? 'fas fa-bookmark' : 'far fa-bookmark'"></i>
+                                    </button>
+                                    <a th:href="${hotel.googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="btn-google-maps" style="font-size: 0.72rem; padding: 0.25rem 0.65rem;">
+                                        <i class="fas fa-location-arrow"></i> Maps
+                                    </a>
+                                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--gold-accent); margin-left: auto;"
+                                          th:text="'₹' + ${#numbers.formatDecimal(hotel.startingPricePerNight, 1, 0)}">₹16,500</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <!-- Interactive India Map Script -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const stateCounts = /*[[${stateHotelCounts}]]*/ {};
+        const stateDistrictMap = /*[[${stateDistrictMap}]]*/ {};
+        const rawPlannedHotelIds = /*[[${plannedHotelIds}]]*/ [];
+        const plannedHotelIdSet = new Set(rawPlannedHotelIds ? Array.from(rawPlannedHotelIds).map(Number) : []);
+
+        // All hotels JSON array for instant client-side responsiveness
+        const allHotelsData = [
+            /*[# th:each="h : ${allHotels}"]*/
+            {
+                id: /*[[${h.id}]]*/ 1,
+                name: /*[[${h.name}]]*/ '',
+                brand: /*[[${h.brand}]]*/ '',
+                state: /*[[${h.state}]]*/ '',
+                district: /*[[${h.district}]]*/ '',
+                city: /*[[${h.city}]]*/ '',
+                rating: /*[[${h.rating}]]*/ 4.8,
+                price: /*[[${h.startingPricePerNight}]]*/ 12000,
+                imageUrl: /*[[${h.imageUrl}]]*/ '',
+                googleMapsUrl: /*[[${h.googleMapsUrl}]]*/ ''
+            },
+            /*[/]*/
+        ];
+
+        let currentState = /*[[${activeState}]]*/ 'Karnataka';
+        let currentDistrict = 'ALL';
+
+        function initMapInteraction() {
+            const tooltip = document.getElementById('mapTooltip');
+            const tooltipStateName = document.getElementById('tooltipStateName');
+            const tooltipHotelCount = document.getElementById('tooltipHotelCount');
+            const mapSvg = document.querySelector('.india-map-svg');
+
+            document.querySelectorAll('.map-state').forEach(stateEl => {
+                const stateName = stateEl.getAttribute('data-state');
+                const count = stateCounts[stateName] || 0;
+
+                stateEl.addEventListener('mouseenter', () => {
+                    tooltipStateName.textContent = stateName;
+                    tooltipHotelCount.textContent = count > 0 ? (count + ' Verified Luxury Stays') : 'No verified properties yet';
+                    tooltip.style.display = 'block';
+                });
+
+                stateEl.addEventListener('mousemove', (e) => {
+                    const rect = mapSvg.getBoundingClientRect();
+                    tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
+                    tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+                });
+
+                stateEl.addEventListener('mouseleave', () => {
+                    tooltip.style.display = 'none';
+                });
+
+                stateEl.addEventListener('click', () => {
+                    selectState(stateName, stateEl);
+                });
+            });
+
+            // Set initial state
+            const initialPath = document.querySelector(`.map-state[data-state="${currentState}"]`);
+            if (initialPath) {
+                selectState(currentState, initialPath);
+            }
+        }
+
+        function selectState(stateName, stateEl) {
+            currentState = stateName;
+            currentDistrict = 'ALL';
+
+            // Active path class
+            document.querySelectorAll('.map-state').forEach(s => s.classList.remove('active'));
+            if (stateEl) {
+                stateEl.classList.add('active');
+            }
+
+            // Update Panel Titles
+            const titleEl = document.getElementById('mapStateTitle');
+            const subTitleEl = document.getElementById('mapStateSubtitle');
+            const countNumEl = document.getElementById('mapHotelCountNumber');
+            const labelState = document.getElementById('labelStateName');
+            const searchLink = document.getElementById('searchLinkForState');
+
+            const count = stateCounts[stateName] || 0;
+
+            if (titleEl) titleEl.textContent = stateName;
+            if (subTitleEl) subTitleEl.textContent = 'Verified luxury properties located in ' + stateName;
+            if (countNumEl) countNumEl.textContent = count;
+            if (labelState) labelState.textContent = stateName;
+            if (searchLink) searchLink.href = '/hotels?state=' + encodeURIComponent(stateName);
+
+            // Populate District Pills (Requirement 3: Then allow district selection)
+            populateDistrictPills(stateName);
+
+            // Render Hotels for this State (Requirement 3: Then display hotels in that district)
+            renderHotels();
+        }
+
+        function populateDistrictPills(stateName) {
+            const container = document.getElementById('mapDistrictSelector');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            const allBtn = document.createElement('button');
+            allBtn.type = 'button';
+            allBtn.className = 'district-btn active';
+            allBtn.textContent = 'All Districts';
+            allBtn.onclick = () => filterByDistrict('ALL', allBtn);
+            container.appendChild(allBtn);
+
+            const districts = stateDistrictMap[stateName] || [];
+            districts.forEach(d => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'district-btn';
+                btn.textContent = d;
+                btn.onclick = () => filterByDistrict(d, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function filterByDistrict(districtName, btnElement) {
+            currentDistrict = districtName;
+
+            // Highlight button
+            const container = document.getElementById('mapDistrictSelector');
+            if (container) {
+                container.querySelectorAll('.district-btn').forEach(b => b.classList.remove('active'));
+            }
+            if (btnElement) {
+                btnElement.classList.add('active');
+            }
+
+            const label = document.getElementById('currentDistrictLabel');
+            if (label) {
+                label.textContent = districtName === 'ALL' ? 'All Districts' : districtName;
+            }
+
+            renderHotels();
+        }
+
+        function renderHotels() {
+            const listEl = document.getElementById('mapHotelsList');
+            if (!listEl) return;
+
+            const filtered = allHotelsData.filter(h => {
+                const matchState = h.state && h.state.toLowerCase() === currentState.toLowerCase();
+                const matchDistrict = currentDistrict === 'ALL' || (h.district && h.district.toLowerCase() === currentDistrict.toLowerCase());
+                return matchState && matchDistrict;
+            });
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align: center; padding: 2.5rem 1rem; background: #f8fafc; border: 1px dashed var(--border-color); border-radius: var(--radius-sm);">
+                        <i class="fas fa-hotel" style="font-size: 2rem; color: var(--gold-accent); opacity: 0.6; margin-bottom: 0.5rem; display: block;"></i>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">No properties in this district yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = '';
+            filtered.forEach(h => {
+                const card = document.createElement('div');
+                card.className = 'map-hotel-card';
+                card.innerHTML = `
+                    <img src="${h.imageUrl}" alt="${h.name}" class="map-hotel-img">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                            <span style="font-size: 0.72rem; font-weight: 700; color: var(--gold-accent);">${h.brand || 'Luxury Stay'}</span>
+                            <span style="font-size: 0.75rem; color: var(--gold-accent); font-weight: 700;"><i class="fas fa-star"></i> ${h.rating}</span>
+                        </div>
+                        <h4 class="brand-font" style="font-size: 0.95rem; color: var(--primary-dark); margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${h.name}</h4>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+                            <i class="fas fa-map-pin"></i> ${h.district} &bull; ${h.city || h.state}
+                        </div>
+                        <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                            <a href="/hotels/${h.id}" class="btn btn-primary btn-sm" style="font-size: 0.72rem; padding: 0.25rem 0.65rem;">
+                                Details
+                            </a>
+                            <button type="button" class="btn-planned-toggle ${plannedHotelIdSet.has(Number(h.id)) ? 'planned-active' : ''}"
+                                    data-hotel-id="${h.id}"
+                                    data-planned="${plannedHotelIdSet.has(Number(h.id))}"
+                                    onclick="togglePlannedHotel(this)"
+                                    title="Add to Planned List"
+                                    aria-label="Add to Planned List">
+                                <i class="${plannedHotelIdSet.has(Number(h.id)) ? 'fas fa-bookmark' : 'far fa-bookmark'}"></i>
+                            </button>
+                            <a href="${h.googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="btn-google-maps" style="font-size: 0.72rem; padding: 0.25rem 0.65rem;">
+                                <i class="fas fa-location-arrow"></i> Maps
+                            </a>
+                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--gold-accent); margin-left: auto;">₹${Number(h.price).toLocaleString('en-IN')}</span>
+                        </div>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initMapInteraction);
+        /*]]>*/
+    </script>
+    <script th:src="@{/js/planned-list.js}"></script>
+</body>
+</html>

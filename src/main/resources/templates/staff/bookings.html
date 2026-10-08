@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Bookings | Staff Desk</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Hotel Reservations Management</h1>
+                <p class="page-subtitle">Track and process all incoming guest reservations and check-in statuses</p>
+            </div>
+        </div>
+
+        <!-- Staff Sub Navigation -->
+        <nav class="sub-navbar">
+            <a href="/staff/dashboard" class="sub-nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="/staff/bookings" class="sub-nav-item active"><i class="fas fa-calendar-check"></i> Bookings</a>
+            <a href="/staff/guests" class="sub-nav-item"><i class="fas fa-users"></i> Guests</a>
+            <a href="/staff/room-status" class="sub-nav-item"><i class="fas fa-door-open"></i> Room Status</a>
+        </nav>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title brand-font"><i class="fas fa-list-alt"></i> All Hotel Bookings</h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Stage 1 Foundation View</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Guest</th>
+                                <th>Room Number</th>
+                                <th>Category</th>
+                                <th>Check-In</th>
+                                <th>Check-Out</th>
+                                <th>Nights</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="booking : ${bookings}">
+                                <td><strong th:text="${booking.bookingReference}">BK-2026-0001</strong></td>
+                                <td>
+                                    <div style="font-weight: 600;" th:text="${booking.guest.fullName}">Alex Morgan</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="${booking.guest.phoneNumber}">+91 9876543210</div>
+                                </td>
+                                <td><strong th:text="'Room ' + ${booking.room.roomNumber}">Room 201</strong></td>
+                                <td th:text="${booking.room.category.displayName}">Deluxe</td>
+                                <td th:text="${booking.checkInDate}">2026-10-01</td>
+                                <td th:text="${booking.checkOutDate}">2026-10-04</td>
+                                <td th:text="${booking.calculateTotalNights()}">3</td>
+                                <td><strong style="color: var(--gold-accent);" th:text="'₹' + ${#numbers.formatDecimal(booking.totalAmount, 1, 2)}">₹14,400.00</strong></td>
+                                <td>
+                                    <span class="badge badge-success" th:text="${booking.status.displayName}">Confirmed</span>
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 0.35rem;">
+                                        <button class="btn btn-dark btn-sm" title="Check-In"><i class="fas fa-key"></i></button>
+                                        <button class="btn btn-outline btn-sm" title="Print Key Card"><i class="fas fa-print"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Tariff &amp; Occupancy Reports | Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Dynamic Tariff Analytics &amp; Revenue Reports</h1>
+                <p class="page-subtitle">Occupancy tracking, demand curves, and dynamic pricing simulation</p>
+            </div>
+        </div>
+
+        <!-- Admin Sub Navigation -->
+        <nav class="sub-navbar">
+            <a href="/admin/dashboard" class="sub-nav-item"><i class="fas fa-chart-bar"></i> Dashboard</a>
+            <a href="/admin/rooms" class="sub-nav-item"><i class="fas fa-bed"></i> Rooms</a>
+            <a href="/admin/bookings" class="sub-nav-item"><i class="fas fa-clipboard-list"></i> Bookings</a>
+            <a href="/admin/staff" class="sub-nav-item"><i class="fas fa-user-tie"></i> Staff</a>
+            <a href="/admin/reports" class="sub-nav-item active"><i class="fas fa-file-invoice-dollar"></i> Reports</a>
+        </nav>
+
+        <!-- Dynamic Tariff Model Explanation -->
+        <div class="card" style="border-top: 4px solid var(--gold-accent);">
+            <div class="card-header">
+                <h3 class="card-title brand-font"><i class="fas fa-balance-scale"></i> Dynamic Tariff Algorithm Tier Model (Viva Reference)</h3>
+                <span class="badge badge-warning">Stage 2 Roadmap</span>
+            </div>
+            <div class="card-body">
+                <p style="margin-bottom: 1.5rem; color: var(--text-dark);">
+                    The Luxury Hotel Tariff Optimizer optimizes room pricing in response to real-time occupancy.
+                    Below is the mathematical multiplier formula designed in Stage 1 architecture:
+                </p>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Occupancy Range</th>
+                                <th>Demand Tier</th>
+                                <th>Pricing Multiplier</th>
+                                <th>Deluxe Room (₹4,500 Base)</th>
+                                <th>Suite (₹8,500 Base)</th>
+                                <th>Presidential (₹18,000 Base)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>&lt; 40%</code></td>
+                                <td>Low Demand / Incentive</td>
+                                <td><strong>0.90x</strong> (-10% Discount)</td>
+                                <td>₹4,050.00</td>
+                                <td>₹7,650.00</td>
+                                <td>₹16,200.00</td>
+                            </tr>
+                            <tr style="background: #fdfaf3;">
+                                <td><code>40% - 70%</code></td>
+                                <td>Standard Nominal Demand</td>
+                                <td><strong>1.00x</strong> (Standard Rate)</td>
+                                <td>₹4,500.00</td>
+                                <td>₹8,500.00</td>
+                                <td>₹18,000.00</td>
+                            </tr>
+                            <tr>
+                                <td><code>70% - 90%</code></td>
+                                <td>High Demand Surge</td>
+                                <td><strong>1.25x</strong> (+25% Surge)</td>
+                                <td>₹5,625.00</td>
+                                <td>₹10,625.00</td>
+                                <td>₹22,500.00</td>
+                            </tr>
+                            <tr>
+                                <td><code>&gt; 90%</code></td>
+                                <td>Peak / Sold-Out Surge</td>
+                                <td><strong>1.50x</strong> (+50% Surge)</td>
+                                <td>₹6,750.00</td>
+                                <td>₹12,750.00</td>
+                                <td>₹27,000.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: var(--radius-sm); border-left: 3px solid var(--info);">
+                    <small><strong>Note for Academic Viva:</strong> The mathematical functions are encapsulated within <code>TariffCalculationHelper.java</code>. Full automated real-time price updates across booking engines will be executed in Stage 2.</small>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

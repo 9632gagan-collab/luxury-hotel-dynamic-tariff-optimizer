@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .booking-reminder-wrap {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.15rem;
+            padding: 0.35rem 0.65rem;
+            background: rgba(200, 155, 60, 0.08);
+            border: 1px solid rgba(200, 155, 60, 0.25);
+            border-radius: var(--radius-sm);
+            min-width: 175px;
+        }
+        .reminder-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: var(--gold-accent);
+            text-transform: uppercase;
+        }
+        .reminder-countdown {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-family: 'Cinzel', serif;
+            line-height: 1.25;
+        }
+        .reminder-subtext {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        .booking-reminder-wrap.reminder-reached {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .booking-reminder-wrap.reminder-reached .reminder-label {
+            color: var(--success);
+        }
+        .booking-reminder-wrap.reminder-reached .reminder-countdown {
+            color: var(--success);
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+        .booking-reminder-wrap.reminder-current-stay {
+            background: rgba(14, 165, 233, 0.08);
+            border-color: rgba(14, 165, 233, 0.3);
+        }
+        .booking-reminder-wrap.reminder-current-stay .reminder-label {
+            color: #0284c7;
+        }
+        .booking-reminder-wrap.reminder-current-stay .reminder-countdown {
+            color: #0284c7;
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">My Luxury Bookings</h1>
+                <p class="page-subtitle">Track and manage your upcoming and completed reservations</p>
+            </div>
+            <div class="page-actions">
+                <a href="/hotels" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> New Reservation</a>
+            </div>
+        </div>
+
+        <!-- Guest Sub Navigation -->
+        <nav class="sub-navbar">
+            <a href="/guest/dashboard" class="sub-nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a href="/hotels" class="sub-nav-item"><i class="fas fa-search"></i> Find Hotels</a>
+            <a href="/guest/my-bookings" class="sub-nav-item active"><i class="fas fa-calendar-check"></i> My Bookings</a>
+            <a href="/guest/profile" class="sub-nav-item"><i class="fas fa-user-cog"></i> Profile &amp; Preferences</a>
+        </nav>
+
+        <!-- Success Reservation Notice -->
+        <div th:if="${successMessage != null}" class="alert" style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--success); color: #065f46; font-size: 0.9rem; padding: 0.9rem 1.25rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+                <i class="fas fa-check-circle" style="color: var(--success); margin-right: 0.5rem; font-size: 1.1rem;"></i>
+                <strong th:text="${successMessage}">Your luxury room reservation was confirmed successfully!</strong>
+            </div>
+            <span style="font-size: 0.8rem; background: #ffffff; padding: 0.25rem 0.6rem; border-radius: 9999px; border: 1px solid #a7f3d0; font-weight: 600; color: #065f46;">
+                <i class="fas fa-receipt"></i> Booking Confirmed
+            </span>
+        </div>
+
+        <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="card-title brand-font"><i class="fas fa-calendar-check"></i> Active Stays &amp; Upcoming Reservations</h3>
+                <span class="badge badge-info" th:text="${#lists.size(bookings)} + ' Active Reservations'">0 Active</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Hotel &amp; Location</th>
+                                <th>Room Number</th>
+                                <th>Category</th>
+                                <th>Duration</th>
+                                <th>Guests</th>
+                                <th>Total Tariff</th>
+                                <th>Status</th>
+                                <th>Reminder</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="booking : ${bookings}">
+                                <td>
+                                    <strong style="color: var(--primary-dark);" th:text="${booking.bookingReference}">BK-2026-0001</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="${#temporals.format(booking.bookingDate, 'dd-MMM-yyyy HH:mm')}">01-Oct-2026</div>
+                                </td>
+                                <td>
+                                    <strong th:text="${booking.getHotelName()}">The Leela Palace</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                        <i class="fas fa-map-marker-alt" style="color: var(--gold-accent);"></i> <span th:text="${booking.getHotelLocation()}">Bengaluru, Karnataka</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong th:text="'Room ' + ${booking.room.roomNumber}">Room 201</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="'Floor ' + ${booking.room.floorNumber}">Floor 2</div>
+                                </td>
+                                <td>
+                                    <span class="room-category-pill" style="position: static; font-size: 0.7rem; padding: 0.2rem 0.5rem;" th:text="${booking.roomType != null and !booking.roomType.isBlank() ? booking.roomType : booking.room.category.displayName}">Deluxe</span>
+                                </td>
+                                <td>
+                                    <div th:text="${booking.checkInDate} + ' to ' + ${booking.checkOutDate}">2026-10-01 to 2026-10-04</div>
+                                    <span style="font-size: 0.75rem; color: var(--gold-accent); font-weight: 600;" th:text="${booking.calculateTotalNights()} + ' Nights'">3 Nights</span>
+                                </td>
+                                <td class="guest-info-cell" style="vertical-align: top; min-width: 175px;">
+                                    <div style="font-weight: 700; color: var(--primary-dark); font-size: 0.82rem; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.3rem;">
+                                        <i class="fas fa-users" style="color: var(--gold-accent);"></i>
+                                        <span th:text="${booking.numberOfGuests} + (${booking.numberOfGuests == 1} ? ' Guest' : ' Guests')">2 Guests</span>
+                                    </div>
+                                    <div th:if="${booking.guestDetails != null and !booking.guestDetails.isEmpty()}" class="traveler-list" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                                        <div th:each="traveler, iterStat : ${booking.guestDetails}"
+                                             class="traveler-item"
+                                             th:title="${(traveler.name != null and !traveler.name.isBlank() ? traveler.name : ('Traveler ' + iterStat.count)) + (traveler.guestType != null ? ' — ' + traveler.guestType : '') + (traveler.age != null ? ' — ' + traveler.age : '') + (traveler.gender != null ? ' — ' + traveler.gender : '')}"
+                                             style="padding: 0.25rem 0.45rem; background: #f8fafc; border-left: 2px solid var(--gold-accent); border-radius: 2px; font-size: 0.78rem; line-height: 1.35;">
+                                            <div class="traveler-name" style="font-weight: 600; color: var(--primary-dark);" th:text="${traveler.name != null and !traveler.name.isBlank() ? traveler.name : ('Traveler ' + iterStat.count)}">Rahul</div>
+                                            <div class="traveler-meta" style="color: var(--text-muted); font-size: 0.72rem;">
+                                                <span th:text="${traveler.guestType}">Adult</span>
+                                                <span th:if="${traveler.age != null}" th:text="' · ' + ${traveler.age}"> · 28</span>
+                                                <span th:if="${traveler.gender != null and !traveler.gender.isBlank()}" th:text="' · ' + ${traveler.gender}"> · Male</span>
+                                            </div>
+                                            <span class="sr-only" style="display: none;" th:text="${(traveler.name != null and !traveler.name.isBlank() ? traveler.name : ('Traveler ' + iterStat.count)) + (traveler.guestType != null ? ' — ' + traveler.guestType : '') + (traveler.age != null ? ' — ' + traveler.age : '') + (traveler.gender != null ? ' — ' + traveler.gender : '')}">Rahul — Adult — 28 — Male</span>
+                                            <span class="sr-only" style="display: none;" th:text="${(traveler.name != null and !traveler.name.isBlank() ? traveler.name : ('Traveler ' + iterStat.count)) + ' ' + (traveler.guestType != null ? traveler.guestType : '') + (traveler.age != null ? ' · Age ' + traveler.age : '') + (traveler.gender != null ? ' · ' + traveler.gender : '')}">Rahul Adult · Age 28 · Male</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong style="color: var(--gold-accent); font-family: 'Cinzel', serif;" th:text="'₹' + ${#numbers.formatDecimal(booking.totalAmount, 1, 2)}">₹14,400.00</strong>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${booking.status.name() == 'CONFIRMED' ? 'badge-success' : (booking.status.name() == 'CHECKED_IN' ? 'badge-info' : 'badge-primary')}"
+                                          th:text="${booking.status.displayName}">Confirmed</span>
+                                </td>
+                                <td class="booking-reminder-cell">
+                                    <div th:if="${booking.checkInDate != null}"
+                                         class="booking-reminder-wrap"
+                                         th:classappend="${booking.isStayCompleted() ? 'reminder-completed' : (booking.isCurrentStay() ? 'reminder-current-stay' : (booking.isCheckInReached() ? 'reminder-reached' : ''))}"
+                                         th:data-checkin-millis="${booking.getCheckInEpochMillis()}"
+                                         th:data-checkout-millis="${booking.getCheckOutEpochMillis()}"
+                                         th:data-booking-status="${booking.status.name()}"
+                                         th:data-server-now="${serverNowMillis}">
+                                        <span class="reminder-label" th:text="${booking.getInitialReminderLabel()}">REMINDER</span>
+                                        <div class="reminder-countdown" th:text="${booking.getInitialReminderCountdown()}">2 Days 8 Hours 24 Minutes</div>
+                                        <span class="reminder-subtext" th:text="${booking.getInitialReminderSubtext()}">until check-in</span>
+                                    </div>
+
+                                    <div th:if="${booking.checkInDate == null}" style="font-size: 0.8rem; color: var(--text-muted);">
+                                        <span>Date not set</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(bookings)}">
+                                <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                                    <i class="fas fa-calendar-times" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
+                                    No active bookings found in your account.<br>
+                                    <a th:href="@{/hotels}" class="btn btn-outline btn-sm" style="margin-top: 1rem;">
+                                        <i class="fas fa-hotel"></i> Explore India Luxury Hotels
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <script th:inline="javascript">
+        (function() {
+            var reminderElements = document.querySelectorAll('.booking-reminder-wrap[data-checkin-millis]');
+            if (!reminderElements.length) return;
+
+            var clientStart = Date.now();
+            var firstServerNow = reminderElements[0].getAttribute('data-server-now');
+            var serverBase = firstServerNow ? parseInt(firstServerNow, 10) : clientStart;
+            var serverOffset = clientStart - serverBase;
+
+            function updateCountdowns() {
+                var currentServerTime = Date.now() - serverOffset;
+                reminderElements.forEach(function(el) {
+                    var checkInMillis = parseInt(el.getAttribute('data-checkin-millis'), 10);
+                    var checkOutMillis = parseInt(el.getAttribute('data-checkout-millis'), 10);
+                    var status = el.getAttribute('data-booking-status') || '';
+                    if (!checkInMillis || isNaN(checkInMillis)) return;
+
+                    var labelEl = el.querySelector('.reminder-label');
+                    var countdownEl = el.querySelector('.reminder-countdown');
+                    var subtextEl = el.querySelector('.reminder-subtext');
+
+                    // 1. Check if completed
+                    if (status === 'COMPLETED' || status === 'CHECKED_OUT' || (checkOutMillis && currentServerTime >= checkOutMillis)) {
+                        if (labelEl) labelEl.textContent = 'STAY COMPLETED';
+                        if (countdownEl) countdownEl.textContent = 'Completed';
+                        if (subtextEl) subtextEl.textContent = 'No active countdown';
+                        el.classList.remove('reminder-current-stay');
+                        el.classList.remove('reminder-reached');
+                        el.classList.add('reminder-completed');
+                        return;
+                    }
+
+                    // 2. Check if checked in / current stay
+                    var isCurrentStay = (status === 'CHECKED_IN') || (currentServerTime >= checkInMillis);
+                    if (isCurrentStay) {
+                        if (labelEl) labelEl.textContent = 'CHECK-OUT REMINDER';
+                        el.classList.add('reminder-current-stay');
+                        el.classList.remove('reminder-reached');
+                        el.classList.remove('reminder-completed');
+
+                        if (checkOutMillis) {
+                            var diffSec = Math.floor((checkOutMillis - currentServerTime) / 1000);
+                            if (diffSec <= 0) {
+                                if (labelEl) labelEl.textContent = 'STAY COMPLETED';
+                                if (countdownEl) countdownEl.textContent = 'Completed';
+                                if (subtextEl) subtextEl.textContent = 'No active countdown';
+                                el.classList.remove('reminder-current-stay');
+                                el.classList.add('reminder-completed');
+                            } else {
+                                var days = Math.floor(diffSec / 86400);
+                                var hours = Math.floor((diffSec % 86400) / 3600);
+                                var minutes = Math.floor((diffSec % 3600) / 60);
+                                var dayLabel = days === 1 ? 'Day' : 'Days';
+                                var text = days + ' ' + dayLabel + ' ' + hours + ' Hours ' + minutes + ' Minutes';
+                                if (countdownEl) countdownEl.textContent = text;
+                                if (subtextEl) subtextEl.textContent = 'until check-out';
+                            }
+                        } else {
+                            if (countdownEl) countdownEl.textContent = 'Checked In';
+                            if (subtextEl) subtextEl.textContent = 'until check-out';
+                        }
+                    } else {
+                        // 3. Before check-in: countdown to check-in
+                        if (labelEl) labelEl.textContent = 'REMINDER';
+                        el.classList.remove('reminder-current-stay');
+                        el.classList.remove('reminder-completed');
+
+                        var diffSec = Math.floor((checkInMillis - currentServerTime) / 1000);
+                        if (diffSec <= 0) {
+                            if (countdownEl) countdownEl.textContent = 'Check-in time reached';
+                            if (subtextEl) subtextEl.textContent = 'until check-out';
+                        } else {
+                            var days = Math.floor(diffSec / 86400);
+                            var hours = Math.floor((diffSec % 86400) / 3600);
+                            var minutes = Math.floor((diffSec % 3600) / 60);
+                            var dayLabel = days === 1 ? 'Day' : 'Days';
+                            var text = days + ' ' + dayLabel + ' ' + hours + ' Hours ' + minutes + ' Minutes';
+                            if (countdownEl) countdownEl.textContent = text;
+                            if (subtextEl) subtextEl.textContent = 'until check-in';
+                        }
+                    }
+                });
+            }
+
+            updateCountdowns();
+            var intervalId = setInterval(updateCountdowns, 1000);
+            window.addEventListener('beforeunload', function() {
+                clearInterval(intervalId);
+            });
+        })();
+    </script>
+</body>
+</html>

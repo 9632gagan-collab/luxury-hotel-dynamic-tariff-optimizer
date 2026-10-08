@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommendations | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+        .rec-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-fast);
+            display: flex;
+            flex-direction: column;
+        }
+        .rec-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--gold-accent);
+        }
+        .rec-card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .rec-card-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .rec-badge {
+            display: inline-block;
+            background: rgba(200, 155, 60, 0.15);
+            color: var(--gold-accent);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .rec-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.4rem;
+        }
+        .rec-location {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .rec-desc {
+            font-size: 0.88rem;
+            color: var(--text-color);
+            line-height: 1.55;
+            margin-bottom: 1.25rem;
+            flex-grow: 1;
+        }
+        .rec-footer {
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .rec-price {
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            color: var(--gold-accent);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Curated Recommendations</h1>
+                <p class="page-subtitle">Exclusive Karnataka luxury stays personalized for discerning guests</p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.5rem;">
+                <a th:href="@{/guest/dashboard}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </a>
+                <a th:href="@{/hotels}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-filter"></i> All Karnataka Hotels
+                </a>
+            </div>
+        </div>
+
+        <!-- Guest Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/guest/dashboard}" class="sub-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/guest/planned-list}" class="sub-nav-item"><i class="fas fa-bookmark"></i> Planned List</a>
+            <a th:href="@{/guest/my-bookings}" class="sub-nav-item"><i class="fas fa-calendar-check"></i> My Bookings</a>
+            <a th:href="@{/guest/booking-history}" class="sub-nav-item"><i class="fas fa-history"></i> Booking History</a>
+            <a th:href="@{/guest/recommendations}" class="sub-nav-item active"><i class="fas fa-gem"></i> Recommendations</a>
+            <a th:href="@{/guest/offers}" class="sub-nav-item"><i class="fas fa-tag"></i> Offers</a>
+            <a th:href="@{/guest/services}" class="sub-nav-item"><i class="fas fa-concierge-bell"></i> Services</a>
+            <a th:href="@{/guest/districts}" class="sub-nav-item"><i class="fas fa-map-marked-alt"></i> Districts</a>
+            <a th:href="@{/guest/profile}" class="sub-nav-item"><i class="fas fa-user-cog"></i> Profile</a>
+        </nav>
+
+        <!-- Highlights Banner -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95)); color: #ffffff; margin-bottom: 2rem;">
+            <div class="card-body" style="padding: 2rem;">
+                <div style="max-width: 750px;">
+                    <span style="color: var(--gold-accent); text-transform: uppercase; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px;">
+                        Handpicked by Luxury Concierge
+                    </span>
+                    <h2 style="font-family: 'Cinzel', serif; font-size: 1.75rem; margin: 0.5rem 0 0.75rem 0; color: #ffffff;">
+                        Top Rated Karnataka Retreats
+                    </h2>
+                    <p style="color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; margin: 0;">
+                        From historic royal palaces in Bengaluru and Mysuru to mist-covered coffee plantation estates in Kodagu and Chikkamagaluru, our curated Karnataka collection highlights premier luxury hospitality.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations Grid -->
+        <div class="rec-grid">
+            <div class="rec-card" th:each="hotel : ${hotels}">
+                <img th:src="${hotel.imageUrl}" th:alt="${hotel.name}" class="rec-card-img" onerror="this.src='/images/hotel-placeholder.jpg'">
+                <div class="rec-card-body">
+                    <div>
+                        <span class="rec-badge" th:text="${hotel.district}">District</span>
+                        <h3 class="rec-title" th:text="${hotel.name}">The Leela Palace Bengaluru</h3>
+                        <div class="rec-location">
+                            <i class="fas fa-map-marker-alt" style="color: var(--gold-accent);"></i>
+                            <span th:text="${hotel.cityLocation} + ', Karnataka'">HAL Old Airport Rd, Bengaluru, Karnataka</span>
+                        </div>
+                    </div>
+                    <p class="rec-desc" th:text="${hotel.shortDescription}">
+                        Grand art deco palace inspired by the Royal Palace of Mysore with sprawling landscaped gardens and ultra-luxury suites.
+                    </p>
+                    <div class="rec-footer">
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">From</span>
+                            <span class="rec-price" th:text="'₹' + ${#numbers.formatDecimal(hotel.startingPricePerNight, 0, 'COMMA', 0, 'POINT')}">₹16,000</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">/ night</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <a th:href="@{'/hotels/' + ${hotel.id}}" class="btn btn-outline btn-sm">Details</a>
+                            <button type="button" class="btn-planned-toggle"
+                                    th:data-hotel-id="${hotel.id}"
+                                    th:classappend="${plannedHotelIds != null and plannedHotelIds.contains(hotel.id)} ? 'is-planned' : ''"
+                                    th:title="${plannedHotelIds != null and plannedHotelIds.contains(hotel.id)} ? 'In your Planned List (Click to remove)' : 'Add to Planned List'"
+                                    th:aria-label="${plannedHotelIds != null and plannedHotelIds.contains(hotel.id)} ? 'Remove from Planned List' : 'Add to Planned List'"
+                                    onclick="togglePlannedHotel(this, event)">
+                                <i th:class="${plannedHotelIds != null and plannedHotelIds.contains(hotel.id)} ? 'fas fa-bookmark' : 'far fa-bookmark'"></i>
+                            </button>
+                            <a th:href="@{'/bookings/new?hotelId=' + ${hotel.id}}" class="btn btn-primary btn-sm">Reserve</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <script th:src="@{/js/planned-list.js}"></script>
+</body>
+</html>

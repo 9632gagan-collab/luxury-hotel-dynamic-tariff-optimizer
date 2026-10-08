@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Profile | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Staff Member Profile</h1>
+                <p class="page-subtitle">Personnel credentials and operational account metadata</p>
+            </div>
+            <div class="page-actions">
+                <a th:href="@{/staff/dashboard}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Staff Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/staff/dashboard}" class="sub-nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a th:href="@{/staff/profile}" class="sub-nav-item active"><i class="fas fa-user-circle"></i> Profile</a>
+        </nav>
+
+        <div style="display: flex; justify-content: center;">
+            <div style="max-width: 650px; width: 100%;">
+                <div class="profile-card">
+                    <div class="profile-header" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                        <div class="profile-avatar-circle" style="background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); color: #ffffff;">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <h2 style="color: #ffffff; font-size: 1.45rem; margin-bottom: 0.25rem;" th:text="${staff.username}">Staff Name</h2>
+                        <span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">
+                            HOTEL STAFF PERSONNEL
+                        </span>
+                    </div>
+
+                    <div style="padding: 2rem;">
+                        <h4 style="font-size: 1rem; color: var(--primary-dark); margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                            Personnel Details
+                        </h4>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Staff Name</label>
+                                <div style="font-size: 1.05rem; font-weight: 600; color: var(--primary-dark);" th:text="${staff.username}">Staff Name</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Assigned Role</label>
+                                <div><span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 600;">ROLE_STAFF</span></div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Account Status</label>
+                                <div>
+                                    <span th:if="${staff.status != null and staff.status.name() == 'ACTIVE'}" class="badge-active">
+                                        <i class="fas fa-check-circle"></i> ACTIVE
+                                    </span>
+                                    <span th:unless="${staff.status != null and staff.status.name() == 'ACTIVE'}" class="badge-inactive">
+                                        <i class="fas fa-ban"></i> INACTIVE
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Account Created Date</label>
+                                <div style="font-size: 0.95rem; color: var(--text-dark);" th:text="${#temporals.format(staff.createdAt, 'dd MMM yyyy, HH:mm')}">Date</div>
+                            </div>
+                        </div>
+
+                        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+                            <i class="fas fa-info-circle" style="color: var(--info); margin-right: 0.35rem;"></i>
+                            Staff credentials are authenticated via BCrypt hashing in PostgreSQL. Account activation and deactivation is strictly governed by the Executive Admin.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

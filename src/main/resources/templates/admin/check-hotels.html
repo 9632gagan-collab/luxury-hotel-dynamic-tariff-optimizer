@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Availability Operations | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .ops-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .ops-card {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .ops-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--gold-accent);
+        }
+        .ops-card.active {
+            border: 2px solid var(--gold-accent);
+            background: rgba(197, 160, 89, 0.04);
+            box-shadow: var(--shadow-md);
+        }
+        .ops-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gold-accent);
+            opacity: 0.85;
+        }
+        .ops-card.card-available::before { background: var(--success); }
+        .ops-card.card-reserved::before { background: var(--warning); }
+        .ops-card.card-prebooked::before { background: var(--info); }
+        .ops-card.card-unreserved::before { background: #8b5cf6; }
+        .ops-card.card-occupied::before { background: var(--danger); }
+
+        .ops-metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .ops-metric-title {
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.75px;
+            color: var(--text-muted);
+        }
+        .ops-metric-pct {
+            font-size: 2.2rem;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            color: var(--primary-dark);
+            line-height: 1;
+            margin-bottom: 0.35rem;
+        }
+        .ops-metric-sub {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+        .flow-card {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            padding: 1.35rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .flow-card:hover {
+            border-color: var(--gold-accent);
+            box-shadow: var(--shadow-sm);
+        }
+        .flow-card.active {
+            border: 2px solid var(--gold-accent);
+            background: rgba(197, 160, 89, 0.04);
+        }
+        .flow-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .details-panel {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .details-table th {
+            background: rgba(10, 17, 40, 0.03);
+            text-align: left;
+            padding: 0.85rem 1rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border-color);
+        }
+        .details-table td {
+            padding: 0.95rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-dark);
+        }
+        .details-table tr:hover {
+            background: rgba(197, 160, 89, 0.04);
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.75rem;">
+            <div>
+                <h1 class="page-title">Check Hotels — Room Inventory &amp; Availability Operations</h1>
+                <p class="page-subtitle">Real-time percentage overview of room statuses and guest arrivals across verified Indian properties</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a th:href="@{/admin/districts}" class="btn btn-outline btn-sm"><i class="fas fa-map-marked-alt"></i> Districts View</a>
+                <a th:href="@{/admin/dashboard}" class="btn btn-primary btn-sm"><i class="fas fa-th-large"></i> Operations Center</a>
+            </div>
+        </div>
+
+        <!-- LEVEL 1: Compact Visual Percentage & Status Cards (Requirement 3) -->
+        <div style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 1.05rem; font-family: 'Cinzel', serif; margin: 0; color: var(--primary-dark);">
+                <i class="fas fa-chart-pie" style="color: var(--gold-accent); margin-right: 0.4rem;"></i> Operational Inventory Status
+            </h3>
+            <span style="font-size: 0.82rem; color: var(--text-muted);">Click any card to inspect relevant rooms &amp; reservations</span>
+        </div>
+
+        <div class="ops-grid" id="statusCardsContainer">
+            <!-- Available -->
+            <div class="ops-card card-available" onclick="filterDetails('AVAILABLE', this)">
+                <div class="ops-metric-header">
+                    <span class="ops-metric-title">Available</span>
+                    <i class="fas fa-door-open" style="color: var(--success);"></i>
+                </div>
+                <div class="ops-metric-pct" th:text="${operations.availablePct + '%'}">32%</div>
+                <div class="ops-metric-sub">
+                    <span>Clean &amp; Bookable</span>
+                    <strong th:text="${operations.availableCount + ' rooms'}">14 rooms</strong>
+                </div>
+            </div>
+
+            <!-- Reserved -->
+            <div class="ops-card card-reserved" onclick="filterDetails('RESERVED', this)">
+                <div class="ops-metric-header">
+                    <span class="ops-metric-title">Reserved</span>
+                    <i class="fas fa-calendar-check" style="color: var(--warning);"></i>
+                </div>
+                <div class="ops-metric-pct" th:text="${operations.reservedPct + '%'}">41%</div>
+                <div class="ops-metric-sub">
+                    <span>Confirmed Stays</span>
+                    <strong th:text="${operations.reservedCount + ' booked'}">18 booked</strong>
+                </div>
+            </div>
+
+            <!-- Pre-booked -->
+            <div class="ops-card card-prebooked" onclick="filterDetails('PRE-BOOKED', this)">
+                <div class="ops-metric-header">
+                    <span class="ops-metric-title">Pre-booked</span>
+                    <i class="fas fa-clock" style="color: var(--info);"></i>
+                </div>
+                <div class="ops-metric-pct" th:text="${operations.prebookedPct + '%'}">17%</div>
+                <div class="ops-metric-sub">
+                    <span>Pending Guarantee</span>
+                    <strong th:text="${operations.prebookedCount + ' holds'}">7 holds</strong>
+                </div>
+            </div>
+
+            <!-- Unreserved -->
+            <div class="ops-card card-unreserved" onclick="filterDetails('UNRESERVED', this)">
+                <div class="ops-metric-header">
+                    <span class="ops-metric-title">Unreserved</span>
+                    <i class="fas fa-key" style="color: #8b5cf6;"></i>
+                </div>
+                <div class="ops-metric-pct" th:text="${operations.unreservedPct + '%'}">10%</div>
+                <div class="ops-metric-sub">
+                    <span>Immediate Allocation</span>
+                    <strong th:text="${operations.unreservedCount + ' units'}">4 units</strong>
+                </div>
+            </div>
+
+            <!-- Occupied / Current Stay -->
+            <div class="ops-card card-occupied" onclick="filterDetails('OCCUPIED', this)">
+                <div class="ops-metric-header">
+                    <span class="ops-metric-title">Occupied / Stay</span>
+                    <i class="fas fa-user-check" style="color: var(--danger);"></i>
+                </div>
+                <div class="ops-metric-pct" th:text="${operations.occupiedPct + '%'}">12%</div>
+                <div class="ops-metric-sub">
+                    <span>In-House Guests</span>
+                    <strong th:text="${operations.occupiedCount + ' active'}">5 active</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guest Flow Operational Cards (Requirement 3) -->
+        <div style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 1.05rem; font-family: 'Cinzel', serif; margin: 0; color: var(--primary-dark);">
+                <i class="fas fa-user-friends" style="color: var(--gold-accent); margin-right: 0.4rem;"></i> Guest Flow Operations
+            </h3>
+            <span style="font-size: 0.82rem; color: var(--text-muted);">Click to inspect guest movements</span>
+        </div>
+
+        <div class="flow-grid">
+            <!-- Current Guests -->
+            <div class="flow-card" onclick="filterFlow('CURRENT', this)">
+                <div class="flow-icon" style="background: rgba(16, 185, 129, 0.12); color: var(--success);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Current Guests</div>
+                    <div style="font-size: 1.55rem; font-weight: 700; color: var(--primary-dark);" th:text="${operations.currentGuests}">12</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">Registered in luxury suites</div>
+                </div>
+            </div>
+
+            <!-- Upcoming Check-ins -->
+            <div class="flow-card" onclick="filterFlow('CHECKINS', this)">
+                <div class="flow-icon" style="background: rgba(59, 130, 246, 0.12); color: var(--info);">
+                    <i class="fas fa-plane-arrival"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Upcoming Check-ins</div>
+                    <div style="font-size: 1.55rem; font-weight: 700; color: var(--primary-dark);" th:text="${operations.upcomingCheckins}">8</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">Scheduled in next 7 days</div>
+                </div>
+            </div>
+
+            <!-- Upcoming Check-outs -->
+            <div class="flow-card" onclick="filterFlow('CHECKOUTS', this)">
+                <div class="flow-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);">
+                    <i class="fas fa-plane-departure"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Upcoming Check-outs</div>
+                    <div style="font-size: 1.55rem; font-weight: 700; color: var(--primary-dark);" th:text="${operations.upcomingCheckouts}">5</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">Departures within 72 hours</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Initial Placeholder: Do NOT dump large tables on the first screen (Requirement 3 & 7) -->
+        <div class="details-panel" id="detailsPrompt" style="text-align: center; padding: 2.75rem 1.5rem; border: 1px dashed var(--gold-accent); background: rgba(197, 160, 89, 0.02); border-radius: var(--radius-md); margin-bottom: 2rem;">
+            <i class="fas fa-mouse-pointer" style="font-size: 2.2rem; color: var(--gold-accent); margin-bottom: 0.85rem;"></i>
+            <h4 style="font-family: 'Cinzel', serif; font-size: 1.15rem; color: var(--primary-dark); margin: 0 0 0.35rem;">Operational Overview Ready</h4>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0 auto; max-width: 520px; line-height: 1.5;">
+                Select any operational status card or guest flow metric above to inspect live room allocations, confirmed reservations, and guest arrivals.
+            </p>
+        </div>
+
+        <!-- LEVEL 2: Detail-on-Click Container (Revealed only on click) -->
+        <div class="details-panel" id="detailsSection" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <div>
+                    <h3 id="detailsTitle" style="font-size: 1.15rem; font-family: 'Cinzel', serif; color: var(--primary-dark); margin: 0 0 0.2rem;">
+                        Inventory Details
+                    </h3>
+                    <p id="detailsSubtitle" style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
+                        Operational breakdown
+                    </p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span id="detailsCount" class="badge badge-success" style="font-size: 0.82rem;">0 Records</span>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="closeDetailsPanel()" style="padding: 0.3rem 0.6rem; font-size: 0.78rem;">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="details-table">
+                    <thead>
+                        <tr>
+                            <th>Identifier</th>
+                            <th>Property Location</th>
+                            <th>Room Unit</th>
+                            <th>Guest / Allocation</th>
+                            <th>Dates / Specifications</th>
+                            <th>Status</th>
+                            <th>Tariff</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- LEVEL 3: Full Detailed Information Modal (Requirement 7) -->
+    <div class="admin-modal-backdrop" id="recordModalBackdrop" onclick="closeRecordModal(event)" style="display: none; position: fixed; inset: 0; background: rgba(10, 17, 40, 0.65); backdrop-filter: blur(4px); z-index: 2200; align-items: center; justify-content: center; padding: 1.5rem;">
+        <div class="admin-modal-content" onclick="event.stopPropagation()" style="background: #ffffff; border-radius: var(--radius-md); max-width: 620px; width: 100%; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); overflow: hidden;">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="modalRecordTitle" style="font-size: 1.15rem; font-family: 'Cinzel', serif; color: var(--primary-dark); margin: 0;">Record Details</h3>
+                <button type="button" onclick="closeRecordModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            <div style="padding: 1.5rem;" id="modalRecordBody">
+                <p>Loading record specifications...</p>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <script>
+        function closeDetailsPanel() {
+            document.getElementById('detailsSection').style.display = 'none';
+            document.getElementById('detailsPrompt').style.display = 'block';
+            document.querySelectorAll('.ops-card, .flow-card').forEach(c => c.classList.remove('active'));
+        }
+
+        function filterDetails(status, el) {
+            document.querySelectorAll('.ops-card, .flow-card').forEach(c => c.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            document.getElementById('detailsPrompt').style.display = 'none';
+            const detailsSection = document.getElementById('detailsSection');
+            detailsSection.style.display = 'block';
+
+            const titleMap = {
+                'AVAILABLE': 'Available Room Inventory',
+                'RESERVED': 'Reserved Bookings & Guaranteed Allocations',
+                'PRE-BOOKED': 'Pre-booked Inquiries & Holds',
+                'UNRESERVED': 'Unreserved & Ready Room Units',
+                'OCCUPIED': 'Occupied Rooms & Current Stays'
+            };
+
+            const subMap = {
+                'AVAILABLE': 'Live room units ready for direct reservation and guest check-in',
+                'RESERVED': 'Confirmed guest reservations locked in central reservation ledger',
+                'PRE-BOOKED': 'Tentative guest reservations pending payment or guarantee verification',
+                'UNRESERVED': 'Inventory available across Karnataka and national luxury properties',
+                'OCCUPIED': 'Active in-house resident guests currently staying on property'
+            };
+
+            document.getElementById('detailsTitle').innerText = titleMap[status] || (status + ' Details');
+            document.getElementById('detailsSubtitle').innerText = subMap[status] || 'Operational breakdown';
+
+            fetch('/admin/api/operations/rooms?status=' + encodeURIComponent(status))
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('detailsTableBody');
+                    tbody.innerHTML = '';
+                    document.getElementById('detailsCount').innerText = data.length + ' Records';
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No records currently in this operational category.</td></tr>';
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        const isAvailable = status === 'AVAILABLE' || status === 'UNRESERVED';
+                        const badgeCls = isAvailable ? 'badge-success' : status === 'RESERVED' ? 'badge-warning' : 'badge-info';
+                        tr.innerHTML = `
+                            <td><strong style="color: var(--primary-dark);">${item.reference || 'REF'}</strong></td>
+                            <td>${item.hotelName || 'Royal Property'}</td>
+                            <td><span class="badge badge-outline">Room ${item.roomNumber || '-'}</span></td>
+                            <td>${item.guestName || 'Guest'}</td>
+                            <td>${item.dates || '-'}</td>
+                            <td><span class="badge ${badgeCls}">${item.status || status}</span></td>
+                            <td><strong style="color: var(--gold-accent);">${item.amount || '-'}</strong></td>
+                            <td>
+                                <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;"
+                                    onclick="openItemModal('${encodeURIComponent(JSON.stringify(item))}')">
+                                    <i class="fas fa-eye"></i> View Record
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(err => console.error('Failed to load status details', err));
+        }
+
+        function filterFlow(flowType, el) {
+            document.querySelectorAll('.ops-card, .flow-card').forEach(c => c.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            document.getElementById('detailsPrompt').style.display = 'none';
+            const detailsSection = document.getElementById('detailsSection');
+            detailsSection.style.display = 'block';
+
+            const titleMap = {
+                'CURRENT': 'Current In-House Guests',
+                'CHECKINS': 'Upcoming Guest Arrivals (Check-Ins)',
+                'CHECKOUTS': 'Upcoming Guest Departures (Check-Outs)'
+            };
+
+            document.getElementById('detailsTitle').innerText = titleMap[flowType] || 'Guest Flow Breakdown';
+            document.getElementById('detailsSubtitle').innerText = 'Inspecting real-time movement and logistics';
+
+            fetch('/admin/api/operations/guest-flow?type=' + encodeURIComponent(flowType))
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('detailsTableBody');
+                    tbody.innerHTML = '';
+                    document.getElementById('detailsCount').innerText = data.length + ' Records';
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No guest flow records matching this filter.</td></tr>';
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong style="color: var(--primary-dark);">${item.title}</strong></td>
+                            <td>${item.sub}</td>
+                            <td><span class="badge badge-outline">Guest</span></td>
+                            <td>${item.title}</td>
+                            <td>${item.meta}</td>
+                            <td><span class="badge ${item.badgeClass || 'badge-info'}">${item.badge}</span></td>
+                            <td><span style="color: var(--text-muted); font-size: 0.8rem;">Operations Verified</span></td>
+                            <td>
+                                <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;"
+                                    onclick="openItemModal('${encodeURIComponent(JSON.stringify(item))}')">
+                                    <i class="fas fa-eye"></i> View Record
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(err => console.error('Failed to load guest flow', err));
+        }
+
+        // LEVEL 3 MODAL HANDLER
+        function openItemModal(encodedJson) {
+            const item = JSON.parse(decodeURIComponent(encodedJson));
+            const modal = document.getElementById('recordModalBackdrop');
+            const title = document.getElementById('modalRecordTitle');
+            const body = document.getElementById('modalRecordBody');
+
+            title.innerText = item.reference ? ('Inventory & Stay Record: ' + item.reference) : ('Guest Flow: ' + (item.title || 'Details'));
+            body.innerHTML = `
+                <div style="font-size: 0.88rem; line-height: 1.8;">
+                    ${item.hotelName ? `<div><strong>Hotel Property:</strong> ${item.hotelName}</div>` : ''}
+                    ${item.roomNumber ? `<div><strong>Room Allocation:</strong> Room ${item.roomNumber}</div>` : ''}
+                    ${item.guestName ? `<div><strong>Guest / Allocation Status:</strong> ${item.guestName}</div>` : ''}
+                    ${item.title ? `<div><strong>Guest Full Name:</strong> ${item.title}</div>` : ''}
+                    ${item.sub ? `<div><strong>Stay Destination:</strong> ${item.sub}</div>` : ''}
+                    ${item.dates ? `<div><strong>Stay Dates / Specs:</strong> ${item.dates}</div>` : ''}
+                    ${item.meta ? `<div><strong>Timing &amp; Logistics:</strong> ${item.meta}</div>` : ''}
+                    ${item.amount ? `<div><strong>Published Tariff:</strong> <strong style="color: var(--gold-accent);">${item.amount}</strong></div>` : ''}
+                    ${item.status ? `<div><strong>Operational State:</strong> <span class="badge badge-success">${item.status}</span></div>` : ''}
+                    ${item.badge ? `<div><strong>Live Status:</strong> <span class="badge ${item.badgeClass || 'badge-info'}">${item.badge}</span></div>` : ''}
+                    <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.8rem;">
+                        <i class="fas fa-shield-alt" style="color: var(--gold-accent);"></i> Centrally verified through Royal Indian Stays Hotel Operations Ledger
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function closeRecordModal(event) {
+            if (!event || event.target.id === 'recordModalBackdrop' || event.target.tagName === 'BUTTON') {
+                document.getElementById('recordModalBackdrop').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Room Reservation | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Complete Room Reservation</h1>
+                <p class="page-subtitle">Personalized luxury stay confirmation &amp; guest reservation desk</p>
+            </div>
+            <div class="page-actions">
+                <a th:href="@{/guest/dashboard}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-th-large"></i> Guest Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Guest Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/guest/dashboard}" class="sub-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/rooms}" class="sub-nav-item"><i class="fas fa-search"></i> Search Rooms</a>
+            <a th:href="@{/guest/my-bookings}" class="sub-nav-item"><i class="fas fa-calendar-check"></i> My Bookings</a>
+            <a th:href="@{/guest/profile}" class="sub-nav-item"><i class="fas fa-user-circle"></i> Profile</a>
+        </nav>
+
+        <!-- Error Notice Banner (When Room Unavailable or Validation Error) -->
+        <div th:if="${errorMessage != null}" class="alert" style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; color: #991b1b; font-size: 0.9rem; padding: 0.9rem 1.25rem; border-radius: var(--radius-sm); margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+                <i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 0.5rem; font-size: 1.1rem;"></i>
+                <strong th:text="${errorMessage}">Selected room is unavailable for the selected dates.</strong>
+            </div>
+            <span style="font-size: 0.8rem; background: #ffffff; padding: 0.25rem 0.6rem; border-radius: 9999px; border: 1px solid #fca5a5; font-weight: 600; color: #991b1b;">
+                <i class="fas fa-calendar-times"></i> Action Required
+            </span>
+        </div>
+
+        <!-- Client Error Notice Banner (Instant Frontend Validation) -->
+        <div id="clientErrorBanner" class="alert" style="display: none; background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; color: #991b1b; font-size: 0.9rem; padding: 0.9rem 1.25rem; border-radius: var(--radius-sm); margin-bottom: 2rem; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+                <i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 0.5rem; font-size: 1.1rem;"></i>
+                <strong id="clientErrorMessage">Please select check-in and check-out dates.</strong>
+            </div>
+            <span style="font-size: 0.8rem; background: #ffffff; padding: 0.25rem 0.6rem; border-radius: 9999px; border: 1px solid #fca5a5; font-weight: 600; color: #991b1b;">
+                <i class="fas fa-calendar-times"></i> Action Required
+            </span>
+        </div>
+
+        <!-- Destination Notice Banner -->
+        <div class="alert" style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--success); color: #065f46; font-size: 0.9rem; padding: 0.9rem 1.25rem; border-radius: var(--radius-sm); margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+                <i class="fas fa-check-circle" style="color: var(--success); margin-right: 0.5rem; font-size: 1.1rem;"></i>
+                <strong>Intended Booking Destination:</strong> You are safely signed in to complete your suite reservation.
+            </div>
+            <span style="font-size: 0.8rem; background: #ffffff; padding: 0.25rem 0.6rem; border-radius: 9999px; border: 1px solid #a7f3d0; font-weight: 600;">
+                <i class="fas fa-lock"></i> Protected Guest Action
+            </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; align-items: start;">
+            <!-- Left Column: Hotel & Room Summary -->
+            <div>
+                <!-- Selected Karnataka Hotel Card (if hotelId passed) -->
+                <div class="card" th:if="${selectedHotel != null}" style="border-top: 4px solid var(--gold-accent); margin-bottom: 1.5rem;">
+                    <div class="room-image-wrap" style="height: 190px; border-radius: var(--radius-sm) var(--radius-sm) 0 0;">
+                        <img th:src="${selectedHotel.imageUrl}" th:alt="${selectedHotel.name}" class="room-image">
+                        <span class="room-category-pill" th:text="${selectedHotel.district}">District</span>
+                        <span class="room-status-badge badge badge-success">Verified Property</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title brand-font" style="font-size: 1.2rem; margin-bottom: 0.25rem;" th:text="${selectedHotel.name}">Hotel Name</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                            <i class="fas fa-map-marker-alt" style="color: var(--gold-accent);"></i> <span th:text="${selectedHotel.cityLocation}">Location</span>
+                        </p>
+                        <p style="font-size: 0.82rem; color: var(--text-dark); line-height: 1.4; margin-bottom: 0.5rem;" th:text="${selectedHotel.shortDescription}">Description</p>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">
+                            <i class="fas fa-phone-alt" style="color: var(--gold-accent);"></i> Front Desk: <strong th:text="${selectedHotel.contactNumber}">Contact</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selected Room Summary -->
+                <div class="card" th:if="${selectedRoom != null}" style="border-top: 4px solid var(--gold-accent);">
+                    <div class="room-image-wrap" style="height: 220px; border-radius: var(--radius-sm) var(--radius-sm) 0 0;">
+                    <img th:src="${selectedRoom.imageUrl}" th:alt="${selectedRoom.category.displayName}" class="room-image">
+                    <span class="room-category-pill" th:text="${selectedRoomType != null and !selectedRoomType.isEmpty() ? selectedRoomType : selectedRoom.category.displayName}">Deluxe Room</span>
+                    <span class="room-status-badge badge" th:classappend="${selectedRoom.status.badgeClass}" th:text="${selectedRoom.status.displayName}">Available</span>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h3 class="card-title brand-font" style="font-size: 1.3rem;" th:text="'Room ' + ${selectedRoom.roomNumber}">Room 101</h3>
+                        <span style="font-size: 0.82rem; color: var(--text-muted);"><i class="fas fa-layer-group"></i> Floor <span th:text="${selectedRoom.floorNumber}">1</span></span>
+                    </div>
+                    <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;" th:text="${selectedRoom.description}">
+                        Spacious luxury accommodation featuring private balcony and upscale amenities.
+                    </p>
+
+                    <div style="margin-bottom: 1.25rem;">
+                        <span style="font-size: 0.78rem; text-transform: uppercase; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Suite Amenities</span>
+                        <div class="room-amenities">
+                            <span th:each="amenity : ${selectedRoom.amenities}" class="amenity-tag">
+                                <i th:class="${amenity.iconClass}"></i> <span th:text="${amenity.name}">Wi-Fi</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Nightly Tariff</span>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--gold-accent); font-family: 'Cinzel', serif;" th:text="'₹' + ${#numbers.formatDecimal(selectedRoom.currentTariff, 1, 2)}">₹4,500.00</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Max Capacity</span>
+                            <div style="font-size: 0.95rem; font-weight: 600; color: var(--primary-dark);"><i class="fas fa-users"></i> <span th:text="${selectedRoom.maxOccupancy}">2</span> Guests</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <!-- Right: Reservation Form -->
+            <div class="card" style="box-shadow: var(--shadow-md);">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title brand-font"><i class="fas fa-calendar-check" style="color: var(--gold-accent);"></i> Reservation Details</h3>
+                        <p class="card-subtitle">Specify your stay duration and preferences</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="bookingForm" th:action="@{/bookings/submit}" th:object="${bookingDto}" method="post" onsubmit="return validateBookingDates(event);">
+                        <input type="hidden" th:field="*{roomId}">
+                        <input type="hidden" th:field="*{hotelId}">
+                        <input type="hidden" id="currentRoomTariff" th:value="${selectedRoom != null ? (selectedRoom.currentTariff > 0 ? selectedRoom.currentTariff : selectedRoom.basePricePerNight) : 0}">
+
+                        <input type="hidden" th:field="*{roomType}">
+
+                        <div class="form-group" th:if="${selectedRoomType != null or (selectedRoom != null and selectedRoom.category != null)}">
+                            <label class="form-label"><i class="fas fa-bed"></i> Room Type / Accommodation</label>
+                            <div style="padding: 0.65rem 1rem; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-weight: 600; color: var(--primary-dark); display: flex; align-items: center; justify-content: space-between;">
+                                <span th:text="${selectedRoomType != null and !selectedRoomType.isEmpty() ? selectedRoomType : selectedRoom.category.displayName}">Private / Single Room</span>
+                                <span class="badge badge-gold" style="font-size: 0.75rem;"><i class="fas fa-check"></i> Selected in Find Hotels</span>
+                            </div>
+                        </div>
+
+                        <div class="booking-dates-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label" for="checkInDate"><i class="fas fa-calendar-alt"></i> Check-In Date <span style="color: #ef4444;">*</span></label>
+                                <input type="date" id="checkInDate" th:field="*{checkInDate}" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="checkOutDate"><i class="fas fa-calendar-alt"></i> Check-Out Date <span style="color: #ef4444;">*</span></label>
+                                <input type="date" id="checkOutDate" th:field="*{checkOutDate}" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="numberOfGuests"><i class="fas fa-users"></i> Number of Guests</label>
+                            <select id="numberOfGuests" th:field="*{numberOfGuests}" class="form-control" onchange="renderGuestDetailsTable()" oninput="renderGuestDetailsTable()">
+                                <option value="1">1 Guest</option>
+                                <option value="2">2 Guests</option>
+                                <option value="3">3 Guests</option>
+                                <option value="4">4 Guests</option>
+                                <option value="5">5 Guests</option>
+                                <option value="6">6 Guests</option>
+                                <option value="7">7 Guests</option>
+                                <option value="8">8 Guests</option>
+                                <option value="9">9 Guests</option>
+                                <option value="10">10 Guests</option>
+                            </select>
+                        </div>
+
+                        <!-- Compact Dynamic Guest Reservation Table (Requirements 2, 3, 4) -->
+                        <div id="guestDetailsContainer" class="form-group" style="margin-top: 1rem; margin-bottom: 1.25rem;">
+                            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; font-size: 0.85rem;">
+                                <span><i class="fas fa-id-card" style="color: var(--gold-accent);"></i> Traveler / Guest Details</span>
+                                <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: normal;">All traveler fields required</span>
+                            </label>
+                            <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow-x: auto; -webkit-overflow-scrolling: touch; background: #ffffff;">
+                                <table class="table" style="margin-bottom: 0; font-size: 0.82rem; width: 100%; min-width: 480px;">
+                                    <thead style="background: #f8fafc; border-bottom: 1px solid var(--border-color);">
+                                        <tr>
+                                            <th style="padding: 0.5rem 0.65rem; width: 28%; font-weight: 600; color: var(--text-muted); font-size: 0.78rem;">Name</th>
+                                            <th style="padding: 0.5rem 0.65rem; width: 24%; font-weight: 600; color: var(--text-muted); font-size: 0.78rem;">Guest Type</th>
+                                            <th style="padding: 0.5rem 0.65rem; width: 20%; font-weight: 600; color: var(--text-muted); font-size: 0.78rem;">Age</th>
+                                            <th style="padding: 0.5rem 0.65rem; width: 28%; font-weight: 600; color: var(--text-muted); font-size: 0.78rem;">Gender</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="guestTableBody">
+                                        <!-- Dynamically generated or pre-rendered rows based on guest count -->
+                                        <tr th:each="guest, iter : *{guestDetails}" class="guest-row" th:attr="data-guest-index=${iter.index}">
+                                            <td style="padding: 0.45rem 0.6rem; vertical-align: middle;">
+                                                <input type="text" th:name="'guestDetails[' + ${iter.index} + '].name'" th:value="${guest.name}" placeholder="Enter Full Name" class="form-control form-control-sm guest-name-field" required style="font-size: 0.82rem; padding: 0.35rem 0.5rem; height: auto;">
+                                            </td>
+                                            <td style="padding: 0.45rem 0.6rem; vertical-align: middle;">
+                                                <select th:name="'guestDetails[' + ${iter.index} + '].guestType'" class="form-control form-control-sm guest-type-field" onchange="onGuestTypeChange(this)" required style="font-size: 0.82rem; padding: 0.35rem 0.5rem; height: auto; cursor: pointer; background-color: #fff;">
+                                                    <option value="Adult" th:selected="${guest.guestType == null or guest.guestType.equalsIgnoreCase('Adult')}">Adult</option>
+                                                    <option value="Minor" th:selected="${guest.guestType != null and guest.guestType.equalsIgnoreCase('Minor')}">Minor</option>
+                                                </select>
+                                            </td>
+                                            <td style="padding: 0.45rem 0.6rem; vertical-align: middle;">
+                                                <input type="number" th:name="'guestDetails[' + ${iter.index} + '].age'" th:value="${guest.age}" min="18" max="120" placeholder="Age (18+)" class="form-control form-control-sm guest-age-field" required style="font-size: 0.82rem; padding: 0.35rem 0.5rem; height: auto;">
+                                            </td>
+                                            <td style="padding: 0.45rem 0.6rem; vertical-align: middle;">
+                                                <select th:name="'guestDetails[' + ${iter.index} + '].gender'" class="form-control form-control-sm guest-gender-field" required style="font-size: 0.82rem; padding: 0.35rem 0.5rem; height: auto; cursor: pointer; background-color: #fff;">
+                                                    <option value="">Select Gender</option>
+                                                    <option value="Male" th:selected="${guest.gender != null and guest.gender.equalsIgnoreCase('Male')}">Male</option>
+                                                    <option value="Female" th:selected="${guest.gender != null and guest.gender.equalsIgnoreCase('Female')}">Female</option>
+                                                    <option value="Other" th:selected="${guest.gender != null and guest.gender.equalsIgnoreCase('Other')}">Other</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="travelerValidationMsg" style="display: none; color: #991b1b; font-size: 0.8rem; margin-top: 0.5rem; padding: 0.45rem 0.75rem; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: var(--radius-sm); align-items: center; gap: 0.4rem;">
+                                <i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>
+                                <span id="travelerValidationMsgText"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="specialRequests"><i class="fas fa-concierge-bell"></i> Special Requests &amp; In-Room Preferences</label>
+                            <textarea id="specialRequests" th:field="*{specialRequests}" class="form-control" rows="3" placeholder="Airport transfer pickup, high floor preference, quiet corner room, extra pillows..."></textarea>
+                        </div>
+
+                        <div style="background: rgba(200, 155, 60, 0.08); border: 1px dashed var(--gold-accent); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                <span style="font-size: 0.85rem; color: var(--text-dark); font-weight: 600;">Estimated Duration</span>
+                                <span id="displayDuration" style="font-size: 0.85rem; color: var(--text-dark); font-weight: 600;" th:text="${estimatedNights != null ? estimatedNights + ' Night(s)' : '— (Select dates)'}">— (Select dates)</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(200,155,60,0.2); padding-top: 0.5rem; margin-top: 0.5rem;">
+                                <span style="font-size: 0.95rem; font-weight: 700; color: var(--primary-dark);">Estimated Stay Total</span>
+                                <span id="displayTotal" style="font-size: 1.15rem; font-weight: 700; color: var(--gold-accent); font-family: 'Cinzel', serif;" th:text="${estimatedTotal != null ? '₹' + #numbers.formatDecimal(estimatedTotal, 1, 2) : '—'}">—</span>
+                            </div>
+                            <small style="display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">Taxes and luxury resort amenities included.</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem;">
+                            <i class="fas fa-check-circle"></i> Confirm Reservation
+                        </button>
+
+                        <div style="display: flex; justify-content: space-between; margin-top: 1rem; font-size: 0.85rem;">
+                            <a th:href="@{/rooms}" style="color: var(--text-muted); text-decoration: none;">
+                                <i class="fas fa-arrow-left"></i> Browse Other Rooms
+                            </a>
+                            <a th:href="@{/guest/dashboard}" style="color: var(--gold-accent); font-weight: 600; text-decoration: none;">
+                                Guest Dashboard <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        function showClientError(msg) {
+            var banner = document.getElementById('clientErrorBanner');
+            var textEl = document.getElementById('clientErrorMessage');
+            if (banner && textEl) {
+                textEl.textContent = msg;
+                banner.style.display = 'flex';
+                banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            showTravelerNotice(msg);
+        }
+
+        function hideClientError() {
+            var banner = document.getElementById('clientErrorBanner');
+            if (banner) {
+                banner.style.display = 'none';
+            }
+            var tMsg = document.getElementById('travelerValidationMsg');
+            if (tMsg) {
+                tMsg.style.display = 'none';
+            }
+        }
+
+        function showTravelerNotice(msg) {
+            var tMsg = document.getElementById('travelerValidationMsg');
+            var tText = document.getElementById('travelerValidationMsgText');
+            if (tMsg && tText) {
+                tText.textContent = msg;
+                tMsg.style.display = 'inline-flex';
+            }
+        }
+
+        // Helper to convert any valid date string or date value into standard ISO YYYY-MM-DD
+        function toIsoDateString(val) {
+            if (!val || typeof val !== 'string') return '';
+            var trimmed = val.trim();
+            if (!trimmed) return '';
+
+            // Already YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+                return trimmed;
+            }
+
+            // DD/MM/YY or DD/MM/YYYY (e.g. 10/10/26, 17/10/26, 10/10/2026)
+            var mSlash = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+            if (mSlash) {
+                var day = mSlash[1].padStart(2, '0');
+                var month = mSlash[2].padStart(2, '0');
+                var year = mSlash[3];
+                if (year.length === 2) year = '20' + year;
+                return year + '-' + month + '-' + day;
+            }
+
+            // DD-MM-YY or DD-MM-YYYY
+            var mDash = trimmed.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
+            if (mDash) {
+                var day = mDash[1].padStart(2, '0');
+                var month = mDash[2].padStart(2, '0');
+                var year = mDash[3];
+                if (year.length === 2) year = '20' + year;
+                return year + '-' + month + '-' + day;
+            }
+
+            // Parse using Date constructor for e.g. "17 Oct 2026" or "10 October 2026"
+            var d = new Date(trimmed);
+            if (!isNaN(d.getTime())) {
+                var y = d.getFullYear();
+                var m = String(d.getMonth() + 1).padStart(2, '0');
+                var dt = String(d.getDate()).padStart(2, '0');
+                return y + '-' + m + '-' + dt;
+            }
+
+            return trimmed;
+        }
+
+        function updateEstimatedTariff() {
+            var inInput = document.getElementById('checkInDate');
+            var outInput = document.getElementById('checkOutDate');
+            var durationSpan = document.getElementById('displayDuration');
+            var totalSpan = document.getElementById('displayTotal');
+            var tariffInput = document.getElementById('currentRoomTariff');
+
+            if (!inInput || !outInput || !durationSpan || !totalSpan) return;
+
+            var inVal = toIsoDateString(inInput.value);
+            var outVal = toIsoDateString(outInput.value);
+            var tariff = tariffInput ? parseFloat(tariffInput.value) || 0 : 0;
+
+            if (inVal && outVal) {
+                var inDate = new Date(inVal);
+                var outDate = new Date(outVal);
+                var diffMs = outDate - inDate;
+                var diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                if (diffDays > 0) {
+                    durationSpan.textContent = diffDays + (diffDays === 1 ? ' Night' : ' Nights');
+                    var total = diffDays * tariff;
+                    totalSpan.textContent = '₹' + total.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    hideClientError();
+                    return;
+                }
+            }
+            durationSpan.textContent = '— (Select dates)';
+            totalSpan.textContent = '—';
+        }
+
+        function onGuestTypeChange(selectEl) {
+            if (!selectEl) return;
+            var row = selectEl.closest('tr.guest-row');
+            if (!row) return;
+            var ageInput = row.querySelector('.guest-age-field');
+            if (!ageInput) return;
+            var val = selectEl.value;
+            var guestIdx = parseInt(row.getAttribute('data-guest-index') || 0, 10) + 1;
+
+            if (val === 'Minor') {
+                ageInput.min = '1';
+                ageInput.max = '17';
+                ageInput.placeholder = 'Age (1-17)';
+                if (ageInput.value) {
+                    var a = parseInt(ageInput.value, 10);
+                    if (!isNaN(a) && a >= 18) {
+                        ageInput.value = '';
+                        showTravelerNotice("Traveler " + guestIdx + " marked as Minor. Age must be under 18.");
+                    }
+                }
+            } else {
+                ageInput.min = '18';
+                ageInput.max = '120';
+                ageInput.placeholder = 'Age (18+)';
+                if (ageInput.value) {
+                    var a = parseInt(ageInput.value, 10);
+                    if (!isNaN(a) && a < 18) {
+                        ageInput.value = '';
+                        showTravelerNotice("Traveler " + guestIdx + " marked as Adult. Age must be 18+.");
+                    }
+                }
+            }
+        }
+
+        function createTravelerRow(index, data) {
+            var tr = document.createElement('tr');
+            tr.className = 'guest-row';
+            tr.setAttribute('data-guest-index', index);
+
+            data = data || { name: '', type: 'Adult', age: '', gender: '' };
+            var isMinor = (data.type && data.type.toLowerCase() === 'minor');
+            var minAge = isMinor ? '1' : '18';
+            var maxAge = isMinor ? '17' : '120';
+            var agePlaceholder = isMinor ? 'Age (1-17)' : 'Age (18+)';
+            var safeName = (data.name ? String(data.name).replace(/"/g, '&quot;') : '');
+
+            tr.innerHTML = 
+                '<td style="padding: 0.45rem 0.6rem; vertical-align: middle;">' +
+                    '<input type="text" name="guestDetails[' + index + '].name" placeholder="Enter Full Name" value="' + safeName + '" class="form-control form-control-sm guest-name-field" required style="font-size: 0.82rem; padding: 0.35rem 0.5rem; height: auto;">' +
+                '</td>' +
+                '<td style="padding: 0.45rem 0.6rem; vertical-align: middle;">' +
+                    '<select name="guestDetails[' + index + '].guestType" class="form-control form-control-sm guest-type-field" onchange="onGuestTypeChange(this)" required style="font-size: 0.82rem; padding: 0.35rem 0.5rem; height: auto; cursor: pointer; background-color: #fff;">' +
+                        '<option value="Adult"' + (!isMinor ? ' selected' : '') + '>Adult</option>' +
+                        '<option value="Minor"' + (isMinor ? ' selected' : '') + '>Minor</option>' +
+                    '</select>' +
+                '</td>' +
+                '<td style="padding: 0.45rem 0.6rem; vertical-align: middle;">' +
+                    '<input type="number" name="guestDetails[' + index + '].age" min="' + minAge + '" max="' + maxAge + '" placeholder="' + agePlaceholder + '" value="' + (data.age || '') + '" class="form-control form-control-sm guest-age-field" required style="font-size: 0.82rem; padding: 0.35rem 0.5rem; height: auto;">' +
+                '</td>' +
+                '<td style="padding: 0.45rem 0.6rem; vertical-align: middle;">' +
+                    '<select name="guestDetails[' + index + '].gender" class="form-control form-control-sm guest-gender-field" required style="font-size: 0.82rem; padding: 0.35rem 0.5rem; height: auto; cursor: pointer; background-color: #fff;">' +
+                        '<option value="">Select Gender</option>' +
+                        '<option value="Male"' + (data.gender === 'Male' ? ' selected' : '') + '>Male</option>' +
+                        '<option value="Female"' + (data.gender === 'Female' ? ' selected' : '') + '>Female</option>' +
+                        '<option value="Other"' + (data.gender === 'Other' ? ' selected' : '') + '>Other</option>' +
+                    '</select>' +
+                '</td>';
+            return tr;
+        }
+
+        function renderGuestDetailsTable() {
+            var guestCountSelect = document.getElementById('numberOfGuests');
+            var targetCount = guestCountSelect ? parseInt(guestCountSelect.value, 10) || 1 : 1;
+            var tbody = document.getElementById('guestTableBody');
+            if (!tbody) return;
+
+            var existingRows = tbody.querySelectorAll('tr.guest-row');
+            var currentCount = existingRows.length;
+
+            if (currentCount === targetCount) {
+                existingRows.forEach(function(row) {
+                    var typeSelect = row.querySelector('.guest-type-field');
+                    if (typeSelect) onGuestTypeChange(typeSelect);
+                });
+                return;
+            }
+
+            if (currentCount < targetCount) {
+                // User increased count: append only missing rows (e.g. 2 -> 3 creates Traveler 3, 3 -> 5 creates 4 and 5)
+                // Existing rows are kept untouched, preserving all entered values!
+                for (var i = currentCount; i < targetCount; i++) {
+                    var newRow = createTravelerRow(i, { name: '', type: 'Adult', age: '', gender: '' });
+                    tbody.appendChild(newRow);
+                }
+            } else {
+                // User decreased count: remove only extra rows from the end, keeping earlier rows intact
+                for (var j = currentCount - 1; j >= targetCount; j--) {
+                    if (existingRows[j]) {
+                        tbody.removeChild(existingRows[j]);
+                    }
+                }
+            }
+
+            // Sync guest indices and input names
+            var finalRows = tbody.querySelectorAll('tr.guest-row');
+            finalRows.forEach(function(row, idx) {
+                row.setAttribute('data-guest-index', idx);
+
+                var nameInp = row.querySelector('.guest-name-field');
+                if (nameInp) nameInp.setAttribute('name', 'guestDetails[' + idx + '].name');
+
+                var typeSel = row.querySelector('.guest-type-field');
+                if (typeSel) typeSel.setAttribute('name', 'guestDetails[' + idx + '].guestType');
+
+                var ageInp = row.querySelector('.guest-age-field');
+                if (ageInp) ageInp.setAttribute('name', 'guestDetails[' + idx + '].age');
+
+                var genSel = row.querySelector('.guest-gender-field');
+                if (genSel) genSel.setAttribute('name', 'guestDetails[' + idx + '].gender');
+            });
+
+            // Auto-clear mismatch error message if it was showing
+            var textEl = document.getElementById('clientErrorMessage');
+            if (textEl && textEl.textContent && textEl.textContent.indexOf('Number of traveler rows') !== -1) {
+                hideClientError();
+            }
+        }
+
+        function validateBookingDates(e) {
+            var inInput = document.getElementById('checkInDate');
+            var outInput = document.getElementById('checkOutDate');
+            var rawIn = inInput ? inInput.value : '';
+            var rawOut = outInput ? outInput.value : '';
+
+            // Check-in and check-out dates required
+            if (!rawIn || !rawOut || rawIn.trim() === '' || rawOut.trim() === '') {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                showClientError("Please select check-in and check-out dates.");
+                return false;
+            }
+
+            var isoIn = toIsoDateString(rawIn);
+            var isoOut = toIsoDateString(rawOut);
+
+            var inDate = new Date(isoIn);
+            var outDate = new Date(isoOut);
+
+            if (isNaN(inDate.getTime()) || isNaN(outDate.getTime())) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                showClientError("Please provide valid reservation dates.");
+                return false;
+            }
+
+            if (outDate <= inDate) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                showClientError("Check-out date must be strictly after the check-in date.");
+                return false;
+            }
+
+            // Standardize inputs to ISO YYYY-MM-DD so request sends backend-compatible ISO format
+            inInput.value = isoIn;
+            outInput.value = isoOut;
+
+            // Traveler / Guest Details Validation
+            var guestCountSelect = document.getElementById('numberOfGuests');
+            var expectedCount = guestCountSelect ? parseInt(guestCountSelect.value, 10) || 1 : 1;
+            var guestRows = document.querySelectorAll('#guestTableBody tr.guest-row');
+
+            if (guestRows.length !== expectedCount) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                showClientError("Number of traveler rows (" + guestRows.length + ") does not match selected guest count (" + expectedCount + ").");
+                return false;
+            }
+
+            for (var i = 0; i < guestRows.length; i++) {
+                var row = guestRows[i];
+                var nameInp = row.querySelector('.guest-name-field');
+                var name = nameInp ? nameInp.value.trim() : '';
+                var type = row.querySelector('.guest-type-field') ? row.querySelector('.guest-type-field').value : '';
+                var age = row.querySelector('.guest-age-field') ? row.querySelector('.guest-age-field').value : '';
+                var gender = row.querySelector('.guest-gender-field') ? row.querySelector('.guest-gender-field').value : '';
+
+                if (!name || name === '' || /^traveler\s*\d+$/i.test(name) || /^enter\s*(full\s*)?name$/i.test(name)) {
+                    if (e) { e.preventDefault(); e.stopPropagation(); }
+                    showClientError("Please enter the name for all guests.");
+                    if (nameInp) { nameInp.focus(); }
+                    return false;
+                }
+
+                if (!type || type.trim() === '') {
+                    if (e) { e.preventDefault(); e.stopPropagation(); }
+                    showClientError("Please select a Guest Type for Traveler " + (i + 1) + ".");
+                    return false;
+                }
+                if (!gender || gender.trim() === '') {
+                    if (e) { e.preventDefault(); e.stopPropagation(); }
+                    showClientError("Please select a Gender for Traveler " + (i + 1) + ".");
+                    return false;
+                }
+                if (!age || age.trim() === '') {
+                    if (e) { e.preventDefault(); e.stopPropagation(); }
+                    showClientError("Please enter an Age for Traveler " + (i + 1) + ".");
+                    return false;
+                }
+
+                var ageNum = parseInt(age, 10);
+                if (isNaN(ageNum) || ageNum <= 0 || ageNum > 120) {
+                    if (e) { e.preventDefault(); e.stopPropagation(); }
+                    showClientError("Please enter a valid age (between 1 and 120) for Traveler " + (i + 1) + ".");
+                    return false;
+                }
+
+                if (type.toLowerCase() === 'minor' && ageNum >= 18) {
+                    if (e) { e.preventDefault(); e.stopPropagation(); }
+                    showClientError("Traveler " + (i + 1) + " is marked as Minor, but age is " + ageNum + ". Minors must be under 18 years old.");
+                    return false;
+                }
+                if (type.toLowerCase() === 'adult' && ageNum < 18) {
+                    if (e) { e.preventDefault(); e.stopPropagation(); }
+                    showClientError("Traveler " + (i + 1) + " is marked as Adult, but age is " + ageNum + ". Adults must be 18 years or older.");
+                    return false;
+                }
+            }
+            hideClientError();
+            return true;
+        }
+
+        function initBookingPage() {
+            var inInput = document.getElementById('checkInDate');
+            var outInput = document.getElementById('checkOutDate');
+            var guestCountSelect = document.getElementById('numberOfGuests');
+
+            // Format any initial pre-filled dates to ISO format
+            if (inInput && inInput.value) {
+                var isoIn = toIsoDateString(inInput.value);
+                if (isoIn) inInput.value = isoIn;
+            }
+            if (outInput && outInput.value) {
+                var isoOut = toIsoDateString(outInput.value);
+                if (isoOut) outInput.value = isoOut;
+            }
+
+            if (inInput) {
+                inInput.removeEventListener('input', updateEstimatedTariff);
+                inInput.removeEventListener('change', updateEstimatedTariff);
+                inInput.addEventListener('input', updateEstimatedTariff);
+                inInput.addEventListener('change', updateEstimatedTariff);
+            }
+            if (outInput) {
+                outInput.removeEventListener('input', updateEstimatedTariff);
+                outInput.removeEventListener('change', updateEstimatedTariff);
+                outInput.addEventListener('input', updateEstimatedTariff);
+                outInput.addEventListener('change', updateEstimatedTariff);
+            }
+            if (guestCountSelect) {
+                guestCountSelect.removeEventListener('change', renderGuestDetailsTable);
+                guestCountSelect.removeEventListener('input', renderGuestDetailsTable);
+                guestCountSelect.addEventListener('change', renderGuestDetailsTable);
+                guestCountSelect.addEventListener('input', renderGuestDetailsTable);
+            }
+
+            updateEstimatedTariff();
+            renderGuestDetailsTable();
+        }
+
+        // Expose globally to window
+        window.showClientError = showClientError;
+        window.hideClientError = hideClientError;
+        window.showTravelerNotice = showTravelerNotice;
+        window.toIsoDateString = toIsoDateString;
+        window.updateEstimatedTariff = updateEstimatedTariff;
+        window.onGuestTypeChange = onGuestTypeChange;
+        window.createTravelerRow = createTravelerRow;
+        window.renderGuestDetailsTable = renderGuestDetailsTable;
+        window.validateBookingDates = validateBookingDates;
+        window.initBookingPage = initBookingPage;
+
+        // Self-initialize immediately if document already loaded (e.g. SPA navigation),
+        // or on DOMContentLoaded if parsing initial page.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initBookingPage);
+        } else {
+            initBookingPage();
+        }
+        </script>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

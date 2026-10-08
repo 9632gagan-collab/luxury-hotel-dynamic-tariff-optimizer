@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Staff Operations Home - Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .staff-home-hero {
+            padding: 3.5rem 1.5rem 2.5rem;
+            text-align: center;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2.5rem;
+            border-radius: var(--radius-md);
+            background: radial-gradient(circle at 50% 20%, rgba(14, 165, 233, 0.15) 0%, rgba(15, 23, 42, 0.5) 85%);
+            border: 1px solid rgba(14, 165, 233, 0.25);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        .staff-glass-card {
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(14, 165, 233, 0.22);
+            border-radius: var(--radius-md);
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .staff-glass-card:hover {
+            border-color: rgba(14, 165, 233, 0.55);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(14, 165, 233, 0.18);
+        }
+
+        .snapshot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.75rem;
+        }
+
+        .snapshot-card {
+            padding: 1.25rem 1.35rem;
+            display: flex;
+            align-items: center;
+            gap: 1.15rem;
+        }
+
+        .snapshot-icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.75rem;
+        }
+
+        .quick-action-card {
+            padding: 1.35rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .ops-summary-strip {
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            margin-bottom: 3.5rem;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.85) 100%);
+            border: 1px solid rgba(14, 165, 233, 0.35);
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.85rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 30px;
+            font-size: 0.82rem;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="home-page">
+
+    <!-- Home Page Scroll-Driven Cinematic Background Animation Layer -->
+    <div id="homeBgAnimLayer" class="home-bg-anim-layer" aria-hidden="true">
+        <canvas id="homeBgCanvas"></canvas>
+        <div class="home-bg-scrim"></div>
+    </div>
+
+    <!-- Header Fragment (With Staff Main Navigation) -->
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper" style="max-width: 1220px; margin: 0 auto; padding: 2rem 1.25rem;">
+
+        <!-- 1. STAFF WELCOME / HERO AREA -->
+        <section class="staff-home-hero">
+            <canvas class="hero-logo-img royal-animated-logo" width="512" height="512" role="img" aria-label="Royal Indian Stays Logo"
+                    style="max-width: 150px; width: 120px; height: 120px; margin-bottom: 1.15rem; border-radius: var(--radius-sm); filter: drop-shadow(0 6px 20px rgba(0,0,0,0.5)); display: inline-block;"></canvas>
+
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(14, 165, 233, 0.2); border: 1px solid #38bdf8; padding: 0.3rem 0.9rem; border-radius: var(--radius-full); font-size: 0.76rem; font-weight: 700; color: #38bdf8; margin-bottom: 1rem; letter-spacing: 0.06em; text-transform: uppercase;">
+                <i class="fas fa-concierge-bell"></i> Staff Operations Desk &bull; Royal Indian Stays
+            </div>
+
+            <h1 class="brand-font" style="font-size: 2.35rem; font-weight: 700; margin-bottom: 0.75rem; color: #ffffff; letter-spacing: 0.5px;">
+                Welcome, <span th:text="${staffName != null ? staffName : 'Staff'}" style="color: #38bdf8;">Staff Member</span>
+            </h1>
+
+            <p style="font-size: 1.05rem; color: #cbd5e1; max-width: 740px; margin: 0 auto 1.75rem; line-height: 1.55; font-weight: 300;">
+                Live guest operations, room availability, and today's arrivals &amp; departures.
+            </p>
+
+            <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                <a th:href="@{/staff/dashboard}" class="btn btn-primary" style="padding: 0.75rem 1.85rem; font-size: 0.92rem; box-shadow: var(--shadow-md);">
+                    <i class="fas fa-th-large"></i> Live Operations Dashboard
+                </a>
+                <a th:href="@{/staff/check-rooms}" class="btn btn-outline" style="color: #ffffff; border-color: rgba(255,255,255,0.7); padding: 0.75rem 1.65rem;">
+                    <i class="fas fa-door-open"></i> Check Rooms
+                </a>
+            </div>
+        </section>
+
+        <!-- 2. QUICK OPERATIONAL SUMMARIES (Snapshot) -->
+        <div style="margin-bottom: 1.25rem;">
+            <span style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: #38bdf8; letter-spacing: 0.08em;">
+                <i class="fas fa-chart-pie"></i> Real-time Telemetry
+            </span>
+            <h2 class="brand-font" style="font-size: 1.45rem; color: #ffffff; margin: 0.25rem 0 0;">Today's Operations Summary</h2>
+        </div>
+
+        <section class="snapshot-grid">
+            <!-- Current Guests -->
+            <div class="staff-glass-card snapshot-card">
+                <div class="snapshot-icon-box" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <div style="font-size: 1.65rem; font-weight: 700; color: #38bdf8; line-height: 1.2;" th:text="${ops.currentGuests}">0</div>
+                    <div style="font-size: 0.88rem; font-weight: 600; color: #f8fafc; margin-top: 0.2rem;">Current Guests</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.15rem;">Residing in-house today</div>
+                </div>
+            </div>
+
+            <!-- Today's Check-ins -->
+            <div class="staff-glass-card snapshot-card">
+                <div class="snapshot-icon-box" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3);">
+                    <i class="fas fa-sign-in-alt"></i>
+                </div>
+                <div>
+                    <div style="font-size: 1.65rem; font-weight: 700; color: #4ade80; line-height: 1.2;" th:text="${ops.todayArrivals}">0</div>
+                    <div style="font-size: 0.88rem; font-weight: 600; color: #f8fafc; margin-top: 0.2rem;">Today's Check-ins</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.15rem;">Arrivals scheduled</div>
+                </div>
+            </div>
+
+            <!-- Today's Check-outs -->
+            <div class="staff-glass-card snapshot-card">
+                <div class="snapshot-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <div>
+                    <div style="font-size: 1.65rem; font-weight: 700; color: #fbbf24; line-height: 1.2;" th:text="${ops.todayDepartures}">0</div>
+                    <div style="font-size: 0.88rem; font-weight: 600; color: #f8fafc; margin-top: 0.2rem;">Today's Check-outs</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.15rem;">Departures scheduled</div>
+                </div>
+            </div>
+
+            <!-- Room Availability -->
+            <div class="staff-glass-card snapshot-card">
+                <div class="snapshot-icon-box" style="background: rgba(197, 160, 89, 0.15); color: var(--gold-accent); border: 1px solid rgba(197, 160, 89, 0.3);">
+                    <i class="fas fa-door-closed"></i>
+                </div>
+                <div>
+                    <div style="font-size: 1.65rem; font-weight: 700; color: var(--gold-accent); line-height: 1.2;" th:text="${ops.availablePct} + '%'">0%</div>
+                    <div style="font-size: 0.88rem; font-weight: 600; color: #f8fafc; margin-top: 0.2rem;">Room Availability</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.15rem;">
+                        <span th:text="${ops.availableCount}">0</span> / <span th:text="${ops.totalInventory}">0</span> rooms ready
+                    </div>
+                </div>
+            </div>
+
+            <!-- Occupied Rooms -->
+            <div class="staff-glass-card snapshot-card">
+                <div class="snapshot-icon-box" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">
+                    <i class="fas fa-key"></i>
+                </div>
+                <div>
+                    <div style="font-size: 1.65rem; font-weight: 700; color: #c084fc; line-height: 1.2;" th:text="${ops.occupancyPct} + '%'">0%</div>
+                    <div style="font-size: 0.88rem; font-weight: 600; color: #f8fafc; margin-top: 0.2rem;">Occupied Rooms</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.15rem;">
+                        <span th:text="${ops.occupiedCount}">0</span> rooms in service
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance -->
+            <div class="staff-glass-card snapshot-card">
+                <div class="snapshot-icon-box" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div>
+                    <div style="font-size: 1.65rem; font-weight: 700; color: #f87171; line-height: 1.2;" th:text="${ops.maintenanceCount}">0</div>
+                    <div style="font-size: 0.88rem; font-weight: 600; color: #f8fafc; margin-top: 0.2rem;">Maintenance</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.15rem;">
+                        <span th:text="${ops.maintenancePct}">0</span>% under repair
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. QUICK ACTIONS -->
+        <div style="margin-bottom: 1.25rem;">
+            <span style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: #38bdf8; letter-spacing: 0.08em;">
+                <i class="fas fa-bolt"></i> Operations Shortcuts
+            </span>
+            <h2 class="brand-font" style="font-size: 1.45rem; color: #ffffff; margin: 0.25rem 0 0;">Quick Actions</h2>
+        </div>
+
+        <section class="quick-actions-grid">
+            <!-- Check Rooms -->
+            <a th:href="@{/staff/check-rooms}" class="staff-glass-card quick-action-card">
+                <div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem;">
+                        <div class="snapshot-icon-box" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+                            <i class="fas fa-door-open"></i>
+                        </div>
+                        <i class="fas fa-arrow-right" style="color: #38bdf8; font-size: 0.9rem;"></i>
+                    </div>
+                    <h3 style="font-size: 1.15rem; font-family: 'Cinzel', serif; color: #ffffff; margin-bottom: 0.4rem;">Check Rooms</h3>
+                    <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.45; margin: 0;">
+                        Operational room status board: Available, Reserved, Pre-booked, Occupied &amp; Maintenance.
+                    </p>
+                </div>
+                <div style="margin-top: 1.25rem; font-size: 0.78rem; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 0.4rem;">
+                    <span>Open Room Board</span> <i class="fas fa-chevron-right" style="font-size: 0.65rem;"></i>
+                </div>
+            </a>
+
+            <!-- Today's Bookings -->
+            <a th:href="@{/staff/bookings}" class="staff-glass-card quick-action-card">
+                <div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem;">
+                        <div class="snapshot-icon-box" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3);">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <i class="fas fa-arrow-right" style="color: #4ade80; font-size: 0.9rem;"></i>
+                    </div>
+                    <h3 style="font-size: 1.15rem; font-family: 'Cinzel', serif; color: #ffffff; margin-bottom: 0.4rem;">Today's Bookings</h3>
+                    <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.45; margin: 0;">
+                        Inspect scheduled guest arrivals, departures, room assignments, and confirmed reservations.
+                    </p>
+                </div>
+                <div style="margin-top: 1.25rem; font-size: 0.78rem; font-weight: 700; color: #4ade80; display: flex; align-items: center; gap: 0.4rem;">
+                    <span>View Today's Bookings</span> <i class="fas fa-chevron-right" style="font-size: 0.65rem;"></i>
+                </div>
+            </a>
+
+            <!-- Guest Requests -->
+            <a th:href="@{/staff/dashboard#guest-requests}" class="staff-glass-card quick-action-card">
+                <div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem;">
+                        <div class="snapshot-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                            <i class="fas fa-concierge-bell"></i>
+                        </div>
+                        <i class="fas fa-arrow-right" style="color: #fbbf24; font-size: 0.9rem;"></i>
+                    </div>
+                    <h3 style="font-size: 1.15rem; font-family: 'Cinzel', serif; color: #ffffff; margin-bottom: 0.4rem;">Guest Requests</h3>
+                    <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.45; margin: 0;">
+                        Special concierge requests, room preferences, and hospitality accommodations from guests.
+                    </p>
+                </div>
+                <div style="margin-top: 1.25rem; font-size: 0.78rem; font-weight: 700; color: #fbbf24; display: flex; align-items: center; gap: 0.4rem;">
+                    <span>Review Guest Requests</span> <i class="fas fa-chevron-right" style="font-size: 0.65rem;"></i>
+                </div>
+            </a>
+
+            <!-- Messages & Requests -->
+            <a th:href="@{/staff/messages/inbox}" class="staff-glass-card quick-action-card">
+                <div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem;">
+                        <div class="snapshot-icon-box" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <i class="fas fa-arrow-right" style="color: #c084fc; font-size: 0.9rem;"></i>
+                    </div>
+                    <h3 style="font-size: 1.15rem; font-family: 'Cinzel', serif; color: #ffffff; margin-bottom: 0.4rem;">Messages &amp; Admin</h3>
+                    <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.45; margin: 0;">
+                        Submit shift and resource requests to administrators and review internal communication memos.
+                    </p>
+                </div>
+                <div style="margin-top: 1.25rem; font-size: 0.78rem; font-weight: 700; color: #c084fc; display: flex; align-items: center; gap: 0.4rem;">
+                    <span>Open Messages</span> <i class="fas fa-chevron-right" style="font-size: 0.65rem;"></i>
+                </div>
+            </a>
+        </section>
+
+        <!-- 4. OPERATIONS STATUS STRIP -->
+        <section class="ops-summary-strip">
+            <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
+                <div>
+                    <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #38bdf8; letter-spacing: 0.08em; display: block;">
+                        Live Telemetry
+                    </span>
+                    <strong style="font-size: 1.05rem; font-family: 'Cinzel', serif; color: #ffffff;">Current Operational Status</strong>
+                </div>
+
+                <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+                    <div class="status-chip">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e;"></span>
+                        Available: <strong th:text="${ops.availablePct} + '%'">0%</strong>
+                    </div>
+                    <div class="status-chip">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #38bdf8;"></span>
+                        Occupied: <strong th:text="${ops.occupancyPct} + '%'">0%</strong>
+                    </div>
+                    <div class="status-chip">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #fbbf24;"></span>
+                        Reserved: <strong th:text="${ops.reservedPct} + '%'">0%</strong>
+                    </div>
+                    <div class="status-chip">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #f87171;"></span>
+                        Maintenance: <strong th:text="${ops.maintenanceCount}">0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <a th:href="@{/staff/dashboard}" class="btn btn-primary btn-sm" style="white-space: nowrap; font-size: 0.82rem; padding: 0.55rem 1.15rem;">
+                    <i class="fas fa-th-large"></i> Enter Operations Dashboard <i class="fas fa-arrow-right" style="margin-left: 0.25rem;"></i>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Fragment -->
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

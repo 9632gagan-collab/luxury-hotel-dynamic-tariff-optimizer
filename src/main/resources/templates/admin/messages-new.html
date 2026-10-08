@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Message to Staff | Royal Indian Stays Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Send Message to Staff</h1>
+                <p class="page-subtitle">Targeted administrative communication to selected staff personnel</p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.75rem; align-items: center;">
+                <a th:href="@{/admin/messages/inbox}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to Messages
+                </a>
+            </div>
+        </div>
+
+        <!-- Admin Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/admin/dashboard}" class="sub-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/admin/notifications}" class="sub-nav-item"><i class="fas fa-bell"></i> Notifications (<span th:text="${unreadNotificationCount != null ? unreadNotificationCount : 0}">0</span>)</a>
+            <a th:href="@{/admin/messages/inbox}" class="sub-nav-item active"><i class="fas fa-envelope"></i> Messages</a>
+            <a th:href="@{/admin/messages/requests}" class="sub-nav-item"><i class="fas fa-clipboard-list"></i> Staff Requests</a>
+            <a th:href="@{/admin/staff/add}" class="sub-nav-item"><i class="fas fa-user-plus"></i> Add Staff</a>
+            <a th:href="@{/admin/staff}" class="sub-nav-item"><i class="fas fa-users-cog"></i> Staff List</a>
+            <a th:href="@{/admin/guests}" class="sub-nav-item"><i class="fas fa-user-friends"></i> Guest List</a>
+            <a th:href="@{/admin/profile}" class="sub-nav-item"><i class="fas fa-id-card"></i> Admin Profile</a>
+        </nav>
+
+        <!-- Message Sub Tabs -->
+        <div class="msg-tabs-bar">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a th:href="@{/admin/messages/inbox}" class="msg-tab-item">
+                    <i class="fas fa-inbox"></i> Inbox
+                </a>
+                <a th:href="@{/admin/messages/sent}" class="msg-tab-item">
+                    <i class="fas fa-paper-plane"></i> Sent Messages
+                </a>
+                <a th:href="@{/admin/messages/requests}" class="msg-tab-item">
+                    <i class="fas fa-clipboard-list"></i> Staff Requests
+                </a>
+            </div>
+            <div>
+                <span class="btn btn-primary btn-sm" style="font-size: 0.8rem; padding: 0.45rem 0.9rem; opacity: 0.9; cursor: default;">
+                    <i class="fas fa-edit"></i> Composing Message
+                </span>
+            </div>
+        </div>
+
+        <div style="max-width: 900px; margin: 0 auto;">
+            <!-- Message Composition Card -->
+            <div class="card" style="padding: 2rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                    <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: rgba(197, 160, 89, 0.15); display: flex; align-items: center; justify-content: center; color: var(--gold-accent); font-size: 1.2rem;">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-family: 'Cinzel', serif; font-size: 1.2rem; color: var(--primary-dark); margin: 0;">Compose Staff Message</h3>
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.15rem 0 0;">Select one or multiple staff members. Only selected recipients will receive this message.</p>
+                    </div>
+                </div>
+
+                <form th:action="@{/admin/messages/new}" th:object="${messageDto}" method="post" id="adminMessageForm">
+
+                    <!-- Global errors -->
+                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" style="margin-bottom: 1.5rem;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</span>
+                    </div>
+
+                    <!-- Staff Selection Interface (Requirements 2, 3) -->
+                    <div class="form-group" style="margin-bottom: 1.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
+                            <label class="form-label" style="font-weight: 700; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                                <i class="fas fa-users" style="color: var(--gold-accent);"></i> Select Staff Recipient(s) <span style="color: #dc2626;">*</span>
+                            </label>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <button type="button" id="selectAllStaffBtn" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.75rem;">
+                                    <i class="fas fa-check-square"></i> Select All
+                                </button>
+                                <button type="button" id="clearSelectionStaffBtn" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.75rem;">
+                                    <i class="fas fa-square"></i> Clear Selection
+                                </button>
+                                <span id="selectionCounterBadge" class="badge" style="background: rgba(14, 165, 233, 0.15); color: #0284c7; font-size: 0.75rem; font-weight: 700;">
+                                    0 Selected
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Filter Search Input -->
+                        <div style="margin-bottom: 0.75rem;">
+                            <input type="text" id="staffFilterSearch" class="form-control" placeholder="Search staff by name or ID..." style="font-size: 0.85rem; padding: 0.45rem 0.75rem;">
+                        </div>
+
+                        <div class="staff-selection-box">
+                            <div th:if="${#lists.isEmpty(staffList)}" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">
+                                <i class="fas fa-user-slash" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                                <p style="margin: 0; font-size: 0.88rem;">No staff personnel registered yet. Please add staff first.</p>
+                            </div>
+
+                            <div class="staff-checkbox-grid" id="staffCheckboxGrid" th:if="${not #lists.isEmpty(staffList)}">
+                                <label th:each="s : ${staffList}"
+                                       class="staff-check-item"
+                                       th:attr="data-staff-name=${#strings.toLowerCase(s.username)}">
+                                    <input type="checkbox"
+                                           name="staffRecipientIds"
+                                           th:value="${s.id}"
+                                           th:checked="${messageDto.staffRecipientIds != null and messageDto.staffRecipientIds.contains(s.id)}"
+                                           class="staff-recipient-check">
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;" th:text="${s.username}">Staff Name</div>
+                                        <div style="font-size: 0.74rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                             th:text="${s.employeeId != null ? s.employeeId : 'Staff'} + ' • ' + ${s.designation != null ? s.designation : 'Operations'}">
+                                            STF-01 • Operations
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div th:if="${#fields.hasErrors('staffRecipientIds')}" class="form-error" style="color: #dc2626; font-size: 0.82rem; margin-top: 0.35rem;">
+                            <i class="fas fa-exclamation-circle"></i> <span th:errors="*{staffRecipientIds}">Please select at least one staff recipient.</span>
+                        </div>
+                    </div>
+
+                    <!-- Subject Input -->
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label" for="subject" style="font-weight: 700;">
+                            Subject <span style="color: #dc2626;">*</span>
+                        </label>
+                        <input type="text"
+                               id="subject"
+                               th:field="*{subject}"
+                               class="form-control"
+                               placeholder="e.g. Schedule Update for Upcoming Royal Gala"
+                               th:classappend="${#fields.hasErrors('subject')} ? 'is-invalid' : ''">
+                        <div th:if="${#fields.hasErrors('subject')}" class="form-error" style="color: #dc2626; font-size: 0.82rem; margin-top: 0.35rem;">
+                            <i class="fas fa-exclamation-circle"></i> <span th:errors="*{subject}">Subject is required.</span>
+                        </div>
+                    </div>
+
+                    <!-- Message Body -->
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label class="form-label" for="content" style="font-weight: 700;">
+                            Message Content <span style="color: #dc2626;">*</span>
+                        </label>
+                        <textarea id="content"
+                                  th:field="*{content}"
+                                  class="form-control"
+                                  rows="7"
+                                  placeholder="Type your message, operational instructions, or announcement here..."
+                                  th:classappend="${#fields.hasErrors('content')} ? 'is-invalid' : ''"></textarea>
+                        <div th:if="${#fields.hasErrors('content')}" class="form-error" style="color: #dc2626; font-size: 0.82rem; margin-top: 0.35rem;">
+                            <i class="fas fa-exclamation-circle"></i> <span th:errors="*{content}">Message content is required.</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                        <a th:href="@{/admin/messages/inbox}" class="btn btn-outline">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="sendAdminMessageBtn" style="padding: 0.65rem 1.75rem;">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.staff-recipient-check');
+            const selectAllBtn = document.getElementById('selectAllStaffBtn');
+            const clearSelectionBtn = document.getElementById('clearSelectionStaffBtn');
+            const counterBadge = document.getElementById('selectionCounterBadge');
+            const searchInput = document.getElementById('staffFilterSearch');
+            const staffItems = document.querySelectorAll('.staff-check-item');
+
+            function updateCounter() {
+                const count = document.querySelectorAll('.staff-recipient-check:checked').length;
+                if (counterBadge) {
+                    counterBadge.textContent = count + ' Selected';
+                }
+            }
+
+            if (selectAllBtn) {
+                selectAllBtn.addEventListener('click', function() {
+                    checkboxes.forEach(cb => {
+                        // Only check visible items if filtered
+                        const parent = cb.closest('.staff-check-item');
+                        if (parent && parent.style.display !== 'none') {
+                            cb.checked = true;
+                        }
+                    });
+                    updateCounter();
+                });
+            }
+
+            if (clearSelectionBtn) {
+                clearSelectionBtn.addEventListener('click', function() {
+                    checkboxes.forEach(cb => { cb.checked = false; });
+                    updateCounter();
+                });
+            }
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateCounter);
+            });
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const q = this.value.toLowerCase().trim();
+                    staffItems.forEach(item => {
+                        const name = item.getAttribute('data-staff-name') || '';
+                        if (name.includes(q)) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            updateCounter();
+        });
+    </script>
+</body>
+</html>

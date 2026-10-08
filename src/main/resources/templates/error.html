@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notice | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper" style="display: flex; justify-content: center; align-items: center; min-height: 60vh;">
+        <div class="card" style="max-width: 500px; width: 100%; text-align: center; padding: 2rem;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 1.25rem auto;">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2 class="card-title brand-font" style="margin-bottom: 0.5rem;">System Notice</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;" th:text="${errorMessage != null ? errorMessage : 'The requested resource is currently undergoing configuration in Stage 1.'}">
+                Stage 1 System Placeholder Notice
+            </p>
+            <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                <a href="/" class="btn btn-primary"><i class="fas fa-home"></i> Return Home</a>
+                <a href="javascript:history.back()" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Go Back</a>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

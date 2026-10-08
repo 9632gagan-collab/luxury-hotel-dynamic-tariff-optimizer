@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Bookings Overview | Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Executive Reservations Audit</h1>
+                <p class="page-subtitle">Centralized oversight of all customer bookings, stays, and financial metrics</p>
+            </div>
+        </div>
+
+        <!-- Admin Sub Navigation -->
+        <nav class="sub-navbar">
+            <a href="/admin/dashboard" class="sub-nav-item"><i class="fas fa-chart-bar"></i> Dashboard</a>
+            <a href="/admin/rooms" class="sub-nav-item"><i class="fas fa-bed"></i> Rooms</a>
+            <a href="/admin/bookings" class="sub-nav-item active"><i class="fas fa-clipboard-list"></i> Bookings</a>
+            <a href="/admin/staff" class="sub-nav-item"><i class="fas fa-user-tie"></i> Staff</a>
+            <a href="/admin/reports" class="sub-nav-item"><i class="fas fa-file-invoice-dollar"></i> Reports</a>
+        </nav>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title brand-font"><i class="fas fa-file-contract"></i> Master Reservation Ledger</h3>
+                <span class="badge badge-info" th:text="${#lists.size(bookings)} + ' Total Records'">1 Record</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking Ref</th>
+                                <th>Guest Name</th>
+                                <th>Room Reserved</th>
+                                <th>Check-In</th>
+                                <th>Check-Out</th>
+                                <th>Duration</th>
+                                <th>Total Revenue</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="b : ${bookings}">
+                                <td><strong th:text="${b.bookingReference}">BK-2026-0001</strong></td>
+                                <td>
+                                    <strong th:text="${b.guest.fullName}">Alex Morgan</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="${b.guest.email}">alex@example.com</div>
+                                </td>
+                                <td><strong th:text="'Room ' + ${b.room.roomNumber}">Room 201</strong> (<span th:text="${b.room.category.displayName}">Deluxe</span>)</td>
+                                <td th:text="${b.checkInDate}">2026-10-01</td>
+                                <td th:text="${b.checkOutDate}">2026-10-04</td>
+                                <td th:text="${b.calculateTotalNights()} + ' Nights'">3 Nights</td>
+                                <td><strong style="color: var(--gold-accent);" th:text="'₹' + ${#numbers.formatDecimal(b.totalAmount, 1, 2)}">₹14,400.00</strong></td>
+                                <td><span class="badge badge-success" th:text="${b.status.displayName}">Confirmed</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

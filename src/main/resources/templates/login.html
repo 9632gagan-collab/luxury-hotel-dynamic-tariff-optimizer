@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Authentication | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper auth-wrapper" style="display: flex; justify-content: center; align-items: center; min-height: 75vh; padding: 2rem 1rem;">
+        <div style="max-width: 480px; width: 100%;">
+            <div class="card" style="border-top: 4px solid var(--gold-accent); box-shadow: var(--shadow-lg);">
+                <div class="card-header" style="text-align: center; display: block; padding: 1.75rem 1.5rem 1rem;">
+                    <canvas class="royal-animated-logo auth-logo-img" width="512" height="512" role="img" aria-label="Royal Indian Stays Logo" style="max-width: 180px; width: 140px; height: 140px; margin: 0 auto 0.75rem; display: block; border-radius: var(--radius-sm); filter: drop-shadow(0 4px 12px rgba(0,0,0,0.18));"></canvas>
+                    <h2 class="card-title brand-font" style="font-size: 1.35rem;">Portal Sign In</h2>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">Select your designated role to enter the secure workspace</p>
+                </div>
+
+                <div class="card-body" style="padding: 1.5rem 2rem 2rem;">
+                    <!-- Notification Messages -->
+                    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span th:text="${errorMessage}">Authentication failed.</span>
+                    </div>
+
+                    <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle"></i>
+                        <span th:text="${successMessage}">Operation completed successfully.</span>
+                    </div>
+
+                    <!-- Role Selector Options -->
+                    <div class="role-selector-tabs" id="roleSelectorGroup">
+                        <button type="button" class="role-tab-btn" id="tabGuest" onclick="selectRole('GUEST')">
+                            <i class="fas fa-user"></i> GUEST
+                        </button>
+                        <button type="button" class="role-tab-btn" id="tabStaff" onclick="selectRole('STAFF')">
+                            <i class="fas fa-id-badge"></i> STAFF
+                        </button>
+                        <button type="button" class="role-tab-btn" id="tabAdmin" onclick="selectRole('ADMIN')">
+                            <i class="fas fa-user-shield"></i> ADMIN
+                        </button>
+                    </div>
+
+                    <!-- Role Description Banner -->
+                    <div id="roleHintBox" style="font-size: 0.8rem; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.6rem 0.85rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        <i class="fas fa-info-circle" style="color: var(--gold-accent);"></i>
+                        <span id="roleHintText">Sign in using your Guest username or registered email.</span>
+                    </div>
+
+                    <!-- Booking Redirection Notice -->
+                    <div th:if="${redirectUrl != null and !#strings.isEmpty(redirectUrl)}" class="alert" style="background: rgba(200, 155, 60, 0.12); border-left: 4px solid var(--gold-accent); color: var(--primary-dark); font-size: 0.85rem; padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
+                        <i class="fas fa-bookmark" style="color: var(--gold-accent); margin-right: 0.5rem;"></i>
+                        <span>Please sign in with your Guest account to proceed with your booking reservation.</span>
+                    </div>
+
+                    <!-- Unified Multi-Role Authentication Form -->
+                    <form th:action="@{/login}" method="post" id="loginForm">
+                        <input type="hidden" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}" />
+                        <input type="hidden" id="roleInput" name="role" th:value="${selectedRole != null ? selectedRole : 'GUEST'}">
+                        <input type="hidden" id="redirectInput" name="redirect" th:value="${redirectUrl}" th:if="${redirectUrl != null and !#strings.isEmpty(redirectUrl)}">
+
+                        <div class="form-group">
+                            <label class="form-label" for="usernameInput" id="usernameLabel">Username or Email</label>
+                            <input type="text"
+                                   id="usernameInput"
+                                   name="username"
+                                   class="form-control"
+                                   placeholder="Enter your username or email"
+                                   required
+                                   autocomplete="username">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="passwordInput">Password</label>
+                            <input type="password"
+                                   id="passwordInput"
+                                   name="password"
+                                   class="form-control"
+                                   placeholder="••••••••"
+                                   required
+                                   autocomplete="current-password">
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                            <i class="fas fa-sign-in-alt"></i> Sign In to Portal
+                        </button>
+                    </form>
+
+                    <!-- Guest Self-Registration Link -->
+                    <div id="guestRegisterSection" style="margin-top: 1.5rem; text-align: center; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <span>New guest customer?</span>
+                        <a th:href="@{/register}" style="color: var(--gold-accent); font-weight: 600; text-decoration: none; margin-left: 0.35rem;">
+                            Create an Account <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i>
+                        </a>
+                    </div>
+
+                    <!-- Direct Prototype Demo Entry -->
+                    <div style="margin-top: 1.25rem; text-align: center; background: rgba(200, 155, 60, 0.08); border: 1px dashed var(--gold-accent); border-radius: var(--radius-sm); padding: 0.85rem 1rem;">
+                        <div style="font-size: 0.78rem; color: var(--gold-dark); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">
+                            <i class="fas fa-flask"></i> Presentation &amp; Evaluation
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0 0 0.6rem 0;">
+                            Explore Guest, Staff &amp; Admin portals without credentials
+                        </p>
+                        <a th:href="@{/demo}" class="btn btn-outline btn-sm" id="exploreDemoBtn" style="width: 100%; border-color: var(--gold-accent); color: var(--gold-accent); font-weight: 600; display: inline-flex; justify-content: center; align-items: center; gap: 0.45rem; padding: 0.45rem 1rem;">
+                            Explore Demo <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const initialRole = /*[[${selectedRole}]]*/ 'GUEST';
+
+        function selectRole(role) {
+            const roleInput = document.getElementById('roleInput');
+            const usernameLabel = document.getElementById('usernameLabel');
+            const usernameInput = document.getElementById('usernameInput');
+            const roleHintText = document.getElementById('roleHintText');
+            const guestRegisterSection = document.getElementById('guestRegisterSection');
+            const submitBtn = document.getElementById('submitBtn');
+
+            const tabGuest = document.getElementById('tabGuest');
+            const tabStaff = document.getElementById('tabStaff');
+            const tabAdmin = document.getElementById('tabAdmin');
+
+            // Reset tab highlights
+            tabGuest.classList.remove('active');
+            tabStaff.classList.remove('active');
+            tabAdmin.classList.remove('active');
+
+            if (role === 'ADMIN') {
+                roleInput.value = 'ADMIN';
+                tabAdmin.classList.add('active');
+                usernameLabel.textContent = 'Admin Name';
+                usernameInput.placeholder = 'Enter Admin Name';
+                roleHintText.textContent = 'Enter your authorized Admin name and confidential password.';
+                guestRegisterSection.style.display = 'none';
+                submitBtn.innerHTML = '<i class="fas fa-user-shield"></i> Enter Admin Portal';
+            } else if (role === 'STAFF') {
+                roleInput.value = 'STAFF';
+                tabStaff.classList.add('active');
+                usernameLabel.textContent = 'Staff Name';
+                usernameInput.placeholder = 'Enter Admin-assigned Staff Name';
+                roleHintText.textContent = 'Staff accounts must be created by Hotel Administration.';
+                guestRegisterSection.style.display = 'none';
+                submitBtn.innerHTML = '<i class="fas fa-id-badge"></i> Enter Staff Portal';
+            } else {
+                roleInput.value = 'GUEST';
+                tabGuest.classList.add('active');
+                usernameLabel.textContent = 'Username or Email';
+                usernameInput.placeholder = 'Enter your username or email';
+                roleHintText.textContent = 'Sign in using your Guest username or registered email.';
+                guestRegisterSection.style.display = 'block';
+                submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Enter Guest Portal';
+            }
+        }
+
+        // Initialize state on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            selectRole(initialRole || 'GUEST');
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>

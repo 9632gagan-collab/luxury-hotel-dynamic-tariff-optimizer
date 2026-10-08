@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Royal Indian Stays - Mobile Quick Connect</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card-bg: rgba(22, 26, 38, 0.85);
+      --card-border: rgba(212, 175, 55, 0.25);
+      --gold: #d4af37;
+      --gold-light: #f3e5ab;
+      --gold-glow: rgba(212, 175, 55, 0.35);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-green: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 20%, #171d2d 0%, #090a0f 80%);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 520px;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px var(--gold-glow);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--accent-green);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      margin-bottom: 1.25rem;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green);
+      animation: pulseAnim 1.8s infinite;
+    }
+
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.75rem;
+      color: var(--gold-light);
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    .qr-frame {
+      background: #ffffff;
+      padding: 1.25rem;
+      border-radius: 20px;
+      display: inline-block;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      margin-bottom: 1.75rem;
+      border: 3px solid var(--gold);
+    }
+
+    .qr-frame img {
+      display: block;
+      width: 230px;
+      height: 230px;
+      object-fit: contain;
+    }
+
+    .link-card {
+      background: rgba(10, 14, 23, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.35rem;
+      text-align: left;
+    }
+
+    .link-header {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .link-url-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      gap: 0.75rem;
+    }
+
+    .link-url {
+      font-family: monospace;
+      font-size: 1.05rem;
+      color: #38bdf8;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .link-url:hover {
+      text-decoration: underline;
+    }
+
+    .copy-btn {
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .copy-btn:hover {
+      background: var(--gold);
+      color: #000;
+    }
+
+    .instructions {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 1rem;
+      border-radius: 12px;
+      border-left: 3px solid var(--gold);
+    }
+
+    .instructions ol {
+      padding-left: 1.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .instructions li {
+      margin-bottom: 0.35rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">
+      <span class="pulse"></span>
+      SERVER ACTIVE & READY
+    </div>
+
+    <h1>ROYAL INDIAN STAYS</h1>
+    <p class="subtitle">Scan the QR code with your mobile camera to test directly on your phone.</p>
+
+    <div class="qr-frame">
+      <img src="mobile-qr.png" alt="Mobile Quick Connect QR Code" id="qrImage">
+    </div>
+
+    <!-- Mobile LAN Link -->
+    <div class="link-card">
+      <span class="link-header">Mobile / LAN Link (Same Wi-Fi)</span>
+      <div class="link-url-row">
+        <a class="link-url" href="http://192.168.1.38:8080" target="_blank" id="lanUrl">http://192.168.1.38:8080</a>
+        <button class="copy-btn" onclick="copyLink('http://192.168.1.38:8080', this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Local PC Link -->
+    <div class="link-card">
+      <span class="link-header">Local Computer Link</span>
+      <div class="link-url-row">
+        <a class="link-url" href="http://localhost:8080" target="_blank" id="localUrl">http://localhost:8080</a>
+        <button class="copy-btn" onclick="copyLink('http://localhost:8080', this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <strong>Mobile Access Tips:</strong>
+      <ol>
+        <li>Ensure your mobile is connected to the same Wi-Fi network (<strong>hgu_lan</strong>).</li>
+        <li>Open your mobile phone camera or QR scanner app and point it at the code above.</li>
+        <li>Tap the pop-up notification to open Royal Indian Stays immediately.</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    function copyLink(url, btn) {
+      navigator.clipboard.writeText(url).then(() => {
+        const orig = btn.innerText;
+        btn.innerText = 'Copied!';
+        setTimeout(() => { btn.innerText = orig; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

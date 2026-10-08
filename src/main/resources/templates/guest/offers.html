@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Offers &amp; Privileges | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .offers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.75rem;
+            margin-top: 1.5rem;
+        }
+        .offer-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-fast);
+            display: flex;
+            flex-direction: column;
+        }
+        .offer-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--gold-accent);
+        }
+        .offer-header {
+            background: linear-gradient(135deg, var(--primary-dark), #1e293b);
+            color: #ffffff;
+            padding: 1.5rem;
+            position: relative;
+        }
+        .offer-tag {
+            display: inline-block;
+            background: var(--gold-accent);
+            color: #ffffff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .offer-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+        }
+        .offer-subtitle {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+        .offer-body {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .offer-perks {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.5rem 0;
+        }
+        .offer-perks li {
+            font-size: 0.88rem;
+            color: var(--text-color);
+            margin-bottom: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .offer-perks li i {
+            color: var(--gold-accent);
+            font-size: 0.85rem;
+        }
+        .promo-box {
+            background: #f8fafc;
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+        .promo-code {
+            font-family: monospace;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Exclusive Offers &amp; Privileges</h1>
+                <p class="page-subtitle">Seasonal packages, suite upgrades, and bespoke getaway incentives</p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.5rem;">
+                <a th:href="@{/guest/dashboard}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </a>
+                <a th:href="@{/hotels}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-hotel"></i> Explore Hotels
+                </a>
+            </div>
+        </div>
+
+        <!-- Guest Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/guest/dashboard}" class="sub-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/guest/my-bookings}" class="sub-nav-item"><i class="fas fa-calendar-check"></i> My Bookings</a>
+            <a th:href="@{/guest/booking-history}" class="sub-nav-item"><i class="fas fa-history"></i> Booking History</a>
+            <a th:href="@{/guest/recommendations}" class="sub-nav-item"><i class="fas fa-gem"></i> Recommendations</a>
+            <a th:href="@{/guest/offers}" class="sub-nav-item active"><i class="fas fa-tag"></i> Offers</a>
+            <a th:href="@{/guest/services}" class="sub-nav-item"><i class="fas fa-concierge-bell"></i> Services</a>
+            <a th:href="@{/guest/districts}" class="sub-nav-item"><i class="fas fa-map-marked-alt"></i> Districts</a>
+            <a th:href="@{/guest/profile}" class="sub-nav-item"><i class="fas fa-user-cog"></i> Profile</a>
+        </nav>
+
+        <!-- Dynamic Admin-Managed Offers Grid -->
+        <div class="offers-grid" th:if="${offers != null and not #lists.isEmpty(offers)}">
+            <div class="offer-card" th:each="o : ${offers}">
+                <div class="offer-header">
+                    <span class="offer-tag" th:text="${o.tag != null ? o.tag : 'Exclusive Privilege'}">Karnataka Season</span>
+                    <h3 class="offer-title" th:text="${o.title}">Offer Title</h3>
+                    <p class="offer-subtitle" th:text="${o.subtitle}">Valid across verified luxury properties</p>
+                </div>
+                <div class="offer-body">
+                    <ul class="offer-perks">
+                        <li th:each="p : ${o.perkItems}"><i class="fas fa-check-circle"></i> <span th:text="${p}">Perk item</span></li>
+                    </ul>
+                    <div>
+                        <div class="promo-box">
+                            <div>
+                                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Promo Code</div>
+                                <div class="promo-code" th:text="${o.promoCode}">GH-ROYAL</div>
+                            </div>
+                            <span class="badge" th:classappend="${o.active} ? 'badge-success' : 'badge-secondary'" th:text="${o.active} ? 'Active' : 'Expired'">Active</span>
+                        </div>
+                        <a th:href="@{${o.targetUrl != null ? o.targetUrl : '/hotels'}}" class="btn btn-primary" style="width: 100%; text-align: center;">
+                            <span th:text="${o.targetDistrict != null ? 'Explore ' + o.targetDistrict + ' Stays' : 'Explore Luxury Stays'}">Explore Stays</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fallback Static Offers Grid if empty -->
+        <div class="offers-grid" th:if="${offers == null or #lists.isEmpty(offers)}">
+            <!-- Offer 1 -->
+            <div class="offer-card">
+                <div class="offer-header">
+                    <span class="offer-tag">Karnataka Season</span>
+                    <h3 class="offer-title">Kodagu &amp; Western Ghats Serenade</h3>
+                    <p class="offer-subtitle">Valid across Coorg &amp; Chikkamagaluru resorts</p>
+                </div>
+                <div class="offer-body">
+                    <ul class="offer-perks">
+                        <li><i class="fas fa-check-circle"></i> 25% tariff reduction on 3+ night bookings</li>
+                        <li><i class="fas fa-check-circle"></i> Complimentary coffee estate plantation walking tour</li>
+                        <li><i class="fas fa-check-circle"></i> Daily artisanal buffet breakfast &amp; high tea</li>
+                        <li><i class="fas fa-check-circle"></i> 20% discount on Ayurvedic spa treatments</li>
+                    </ul>
+                    <div>
+                        <div class="promo-box">
+                            <div>
+                                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Promo Code</div>
+                                <div class="promo-code">GH-COORG25</div>
+                            </div>
+                            <span class="badge badge-success">Active</span>
+                        </div>
+                        <a th:href="@{/hotels?district=Kodagu}" class="btn btn-primary" style="width: 100%; text-align: center;">Explore Kodagu Stays</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Offer 2 -->
+            <div class="offer-card">
+                <div class="offer-header">
+                    <span class="offer-tag">Heritage Escape</span>
+                    <h3 class="offer-title">Royal Mysuru &amp; Hampi Heritage</h3>
+                    <p class="offer-subtitle">Immerse in royal palaces &amp; UNESCO monuments</p>
+                </div>
+                <div class="offer-body">
+                    <ul class="offer-perks">
+                        <li><i class="fas fa-check-circle"></i> Complimentary palace heritage tour chaperone</li>
+                        <li><i class="fas fa-check-circle"></i> Royal candlelit private dinner for two</li>
+                        <li><i class="fas fa-check-circle"></i> Guaranteed late checkout until 3:00 PM</li>
+                        <li><i class="fas fa-check-circle"></i> Welcome basket with Mysore Pak &amp; royal fragrances</li>
+                    </ul>
+                    <div>
+                        <div class="promo-box">
+                            <div>
+                                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Promo Code</div>
+                                <div class="promo-code">GH-ROYAL20</div>
+                            </div>
+                            <span class="badge badge-success">Active</span>
+                        </div>
+                        <a th:href="@{/hotels?district=Mysuru}" class="btn btn-primary" style="width: 100%; text-align: center;">Explore Mysuru Stays</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Offer 3 -->
+            <div class="offer-card">
+                <div class="offer-header">
+                    <span class="offer-tag">City Luxury</span>
+                    <h3 class="offer-title">Bengaluru Executive Weekend</h3>
+                    <p class="offer-subtitle">Five-star urban indulgence in the Silicon Valley</p>
+                </div>
+                <div class="offer-body">
+                    <ul class="offer-perks">
+                        <li><i class="fas fa-check-circle"></i> Complimentary Mercedes airport chauffeur transfer</li>
+                        <li><i class="fas fa-check-circle"></i> Executive lounge access with all-day refreshments</li>
+                        <li><i class="fas fa-check-circle"></i> 1 complimentary signature massage session</li>
+                        <li><i class="fas fa-check-circle"></i> High-speed gigabit Wi-Fi &amp; boardroom privileges</li>
+                    </ul>
+                    <div>
+                        <div class="promo-box">
+                            <div>
+                                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Promo Code</div>
+                                <div class="promo-code">GH-BLRVIP</div>
+                            </div>
+                            <span class="badge badge-success">Active</span>
+                        </div>
+                        <a th:href="@{/hotels?district=Bengaluru+Urban}" class="btn btn-primary" style="width: 100%; text-align: center;">Explore Bengaluru Stays</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

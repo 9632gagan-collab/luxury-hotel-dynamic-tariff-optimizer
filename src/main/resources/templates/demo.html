@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Prototype Demonstration Portal | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .demo-hero {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+            color: #ffffff;
+            padding: 3rem 1.5rem 2.5rem;
+            text-align: center;
+            border-bottom: 2px solid var(--gold-accent);
+        }
+        .demo-card {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+            border-color: var(--gold-accent);
+        }
+        .demo-card-header {
+            padding: 1.75rem 1.5rem 1.25rem;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .demo-icon-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+        }
+        .demo-feature-list {
+            list-style: none;
+            padding: 1.25rem 1.5rem;
+            margin: 0;
+            flex: 1;
+            font-size: 0.86rem;
+            color: var(--text-dark);
+        }
+        .demo-feature-list li {
+            margin-bottom: 0.65rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        .demo-feature-list li i {
+            margin-top: 3px;
+            font-size: 0.8rem;
+        }
+        .demo-card-footer {
+            padding: 1.25rem 1.5rem 1.5rem;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper" style="min-height: 80vh; padding-bottom: 4rem;">
+        <!-- Demo Portal Header Banner -->
+        <section class="demo-hero">
+            <div style="max-width: 800px; margin: 0 auto;">
+                <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(200, 155, 60, 0.2); border: 1px solid var(--gold-accent); color: var(--gold-light); font-size: 0.8rem; font-weight: 700; padding: 4px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1rem;">
+                    <i class="fas fa-flask"></i> Interactive Evaluation Portal
+                </div>
+                <h1 class="brand-font" style="font-size: 2.2rem; margin-bottom: 0.6rem; letter-spacing: 0.5px; color: #ffffff;">
+                    Prototype Demonstration Mode
+                </h1>
+                <p style="font-size: 1rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0;">
+                    Explore all three role-based portals with pre-configured operational data. Select a role below to launch the live demo immediately without entering credentials.
+                </p>
+            </div>
+        </section>
+
+        <!-- Role Selection Grid -->
+        <div style="max-width: 1140px; margin: -2rem auto 0; padding: 0 1.5rem; position: relative; z-index: 10;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.75rem;">
+                
+                <!-- 1. Guest Demo Card -->
+                <div class="demo-card">
+                    <div style="height: 4px; background: var(--success, #10b981);"></div>
+                    <div class="demo-card-header">
+                        <div class="demo-icon-circle" style="background: rgba(16, 185, 129, 0.12); color: #059669;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #065f46; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; display: inline-block;">
+                            Guest Experience
+                        </span>
+                        <h3 class="brand-font" style="font-size: 1.3rem; margin: 0.25rem 0 0.4rem; color: var(--primary-dark);">Guest Demo</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
+                            Persona: <strong style="color: var(--text-dark);">Alex Morgan</strong> (Luxury Traveler)
+                        </p>
+                    </div>
+                    <ul class="demo-feature-list">
+                        <li><i class="fas fa-check-circle" style="color: #059669;"></i> <span><strong>Hotel Discovery:</strong> Browse 28 verified luxury hotels with filters</span></li>
+                        <li><i class="fas fa-check-circle" style="color: #059669;"></i> <span><strong>Tariff Optimizer:</strong> Live dynamic pricing by dates &amp; category</span></li>
+                        <li><i class="fas fa-check-circle" style="color: #059669;"></i> <span><strong>Travel Planner:</strong> Planned List with notes &amp; visit dates</span></li>
+                        <li><i class="fas fa-check-circle" style="color: #059669;"></i> <span><strong>My Bookings:</strong> Active reservations &amp; stay history</span></li>
+                        <li><i class="fas fa-check-circle" style="color: #059669;"></i> <span><strong>Interactive Map:</strong> State &amp; district geographic explorer</span></li>
+                    </ul>
+                    <div class="demo-card-footer">
+                        <a th:href="@{/demo/guest}" class="btn btn-primary" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.5rem; background: #059669; border-color: #059669;">
+                            Launch Guest Demo <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 2. Staff Demo Card -->
+                <div class="demo-card">
+                    <div style="height: 4px; background: var(--info, #0ea5e9);"></div>
+                    <div class="demo-card-header">
+                        <div class="demo-icon-circle" style="background: rgba(14, 165, 233, 0.12); color: #0284c7;">
+                            <i class="fas fa-id-badge"></i>
+                        </div>
+                        <span class="badge" style="background: rgba(14, 165, 233, 0.15); color: #0369a1; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; display: inline-block;">
+                            Operations &amp; Front Desk
+                        </span>
+                        <h3 class="brand-font" style="font-size: 1.3rem; margin: 0.25rem 0 0.4rem; color: var(--primary-dark);">Staff Demo</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
+                            Persona: <strong style="color: var(--text-dark);">Rajesh Kumar</strong> (Front Desk Lead)
+                        </p>
+                    </div>
+                    <ul class="demo-feature-list">
+                        <li><i class="fas fa-check-circle" style="color: #0284c7;"></i> <span><strong>Staff Home:</strong> Operational overview &amp; live room metrics</span></li>
+                        <li><i class="fas fa-check-circle" style="color: #0284c7;"></i> <span><strong>Check Rooms:</strong> Real-time room status, cleaning &amp; readiness</span></li>
+                        <li><i class="fas fa-check-circle" style="color: #0284c7;"></i> <span><strong>Active Offers:</strong> Seasonal discounts &amp; promo codes</span></li>
+                        <li><i class="fas fa-check-circle" style="color: #0284c7;"></i> <span><strong>Staff Desk:</strong> Shift tracking &amp; operational dashboard</span></li>
+                        <li><i class="fas fa-check-circle" style="color: #0284c7;"></i> <span><strong>Communications:</strong> Admin requests &amp; priority notifications</span></li>
+                    </ul>
+                    <div class="demo-card-footer">
+                        <a th:href="@{/demo/staff}" class="btn btn-primary" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.5rem; background: #0284c7; border-color: #0284c7;">
+                            Launch Staff Demo <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 3. Admin Demo Card -->
+                <div class="demo-card">
+                    <div style="height: 4px; background: var(--gold-accent, #c5a059);"></div>
+                    <div class="demo-card-header">
+                        <div class="demo-icon-circle" style="background: rgba(200, 155, 60, 0.15); color: var(--gold-dark, #9a7322);">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <span class="badge" style="background: rgba(200, 155, 60, 0.18); color: var(--gold-dark, #9a7322); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; display: inline-block;">
+                            System Administration
+                        </span>
+                        <h3 class="brand-font" style="font-size: 1.3rem; margin: 0.25rem 0 0.4rem; color: var(--primary-dark);">Admin Demo</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
+                            Persona: <strong style="color: var(--text-dark);">Gagan T D</strong> (Architecture Lead)
+                        </p>
+                    </div>
+                    <ul class="demo-feature-list">
+                        <li><i class="fas fa-check-circle" style="color: var(--gold-accent);"></i> <span><strong>Admin Home:</strong> Live system snapshot &amp; operational metrics</span></li>
+                        <li><i class="fas fa-check-circle" style="color: var(--gold-accent);"></i> <span><strong>Check Hotels:</strong> All-India inventory &amp; property controls</span></li>
+                        <li><i class="fas fa-check-circle" style="color: var(--gold-accent);"></i> <span><strong>Districts &amp; Offers:</strong> Dynamic catalog &amp; promo packages</span></li>
+                        <li><i class="fas fa-check-circle" style="color: var(--gold-accent);"></i> <span><strong>Staff Oversight:</strong> Activity tracking &amp; shift assignments</span></li>
+                        <li><i class="fas fa-check-circle" style="color: var(--gold-accent);"></i> <span><strong>Control Center:</strong> Staff requests, messages &amp; broadcasts</span></li>
+                    </ul>
+                    <div class="demo-card-footer">
+                        <a th:href="@{/demo/admin}" class="btn btn-primary" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.5rem; background: var(--gold-accent); border-color: var(--gold-accent); color: var(--primary-dark); font-weight: 700;">
+                            Launch Admin Demo <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Return to Standard Login / Registration -->
+            <div style="margin-top: 2.5rem; text-align: center;">
+                <a th:href="@{/login}" style="color: var(--text-muted); text-decoration: none; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.4rem; transition: color 0.2s ease;">
+                    <i class="fas fa-arrow-left"></i> Return to Standard Sign In &amp; Registration
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

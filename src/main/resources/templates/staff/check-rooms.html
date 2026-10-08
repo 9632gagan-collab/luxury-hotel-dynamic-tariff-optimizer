@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Rooms - Operational Room Status Board | Staff Desk</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .filter-chip-bar {
+            display: flex;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .filter-btn {
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-dark);
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--primary-dark);
+            color: #ffffff;
+            border-color: var(--primary-dark);
+        }
+
+        .filter-btn.active .badge-pill {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+        }
+
+        .badge-pill {
+            font-size: 0.72rem;
+            padding: 2px 7px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: var(--primary-dark);
+        }
+
+        .room-card-interactive {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .room-card-interactive:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--gold-accent);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            max-width: 650px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.2s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.97); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <span style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--gold-accent); letter-spacing: 0.08em;">
+                    <i class="fas fa-door-open"></i> Hotel Operations
+                </span>
+                <h1 class="page-title" style="margin-top: 0.2rem;">Check Rooms &bull; Operational Status Board</h1>
+                <p class="page-subtitle">Real-time room availability, active reservations, and associated in-house guests.</p>
+            </div>
+            <div>
+                <a th:href="@{/staff/dashboard}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-th-large"></i> Go to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Alert messages -->
+        <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom: 1.5rem;" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" style="margin-bottom: 1.5rem;" th:text="${errorMessage}"></div>
+
+        <!-- Status Filter Chips -->
+        <div class="filter-chip-bar">
+            <button type="button" class="filter-btn active" onclick="filterRooms('ALL', this)">
+                <i class="fas fa-layer-group"></i> All Rooms <span class="badge-pill" th:text="${rooms != null ? rooms.size() : 0}">0</span>
+            </button>
+            <button type="button" class="filter-btn" onclick="filterRooms('AVAILABLE', this)">
+                <i class="fas fa-door-closed" style="color: #22c55e;"></i> Available
+                <span class="badge-pill" th:text="${ops.availablePct} + '%'">0%</span>
+            </button>
+            <button type="button" class="filter-btn" onclick="filterRooms('OCCUPIED', this)">
+                <i class="fas fa-key" style="color: #38bdf8;"></i> Occupied
+                <span class="badge-pill" th:text="${ops.occupancyPct} + '%'">0%</span>
+            </button>
+            <button type="button" class="filter-btn" onclick="filterRooms('RESERVED', this)">
+                <i class="fas fa-calendar-check" style="color: #fbbf24;"></i> Reserved
+                <span class="badge-pill" th:text="${ops.reservedPct} + '%'">0%</span>
+            </button>
+            <button type="button" class="filter-btn" onclick="filterRooms('PREBOOKED', this)">
+                <i class="fas fa-clock" style="color: #c084fc;"></i> Pre-booked
+                <span class="badge-pill" th:text="${ops.prebookedPct} + '%'">0%</span>
+            </button>
+            <button type="button" class="filter-btn" onclick="filterRooms('UNRESERVED', this)">
+                <i class="fas fa-door-open" style="color: var(--gold-accent);"></i> Unreserved
+                <span class="badge-pill" th:text="${ops.unreservedCount}">0</span>
+            </button>
+            <button type="button" class="filter-btn" onclick="filterRooms('MAINTENANCE', this)">
+                <i class="fas fa-tools" style="color: #f87171;"></i> Maintenance
+                <span class="badge-pill" th:text="${ops.maintenanceCount}">0</span>
+            </button>
+        </div>
+
+        <!-- Room Cards Grid -->
+        <div class="room-grid" id="roomsContainer">
+            <div th:each="room : ${rooms}" class="room-card-interactive room-item"
+                 th:data-status="${room.status.name()}"
+                 th:data-id="${room.id}"
+                 onclick="openRoomModal(this.getAttribute('data-id'))">
+                <div class="room-image-wrap" style="height: 140px; position: relative;">
+                    <img th:src="${room.imageUrl}" th:alt="${room.category.displayName}" class="room-image" style="width: 100%; height: 100%; object-fit: cover;">
+                    <span class="room-category-pill" th:text="${room.category.displayName}" style="position: absolute; top: 8px; left: 8px; background: rgba(15, 23, 42, 0.75); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">Suite</span>
+                    <span class="room-status-badge badge" th:classappend="${room.status.badgeClass}" th:text="${room.status.displayName}" style="position: absolute; top: 8px; right: 8px;">Available</span>
+                </div>
+                <div class="room-content" style="padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <span class="room-number" style="font-weight: 700; font-size: 1.05rem;" th:text="'Room ' + ${room.roomNumber}">Room 101</span>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);"><i class="fas fa-layer-group"></i> Floor <span th:text="${room.floorNumber}">1</span></span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">Royal Indian Stays Property</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 0.65rem;">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--gold-accent);" th:text="'₹' + ${#numbers.formatDecimal(room.basePricePerNight, 1, 2)} + '/night'">₹5,000/night</span>
+                        <span style="font-size: 0.75rem; color: var(--primary-dark); font-weight: 600;">Inspect Details <i class="fas fa-chevron-right" style="font-size: 0.65rem;"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Room Operational Modal (Level 3 Details) -->
+    <div id="roomModal" class="modal-overlay" onclick="closeRoomModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="brand-font" id="modalRoomTitle" style="margin: 0; font-size: 1.3rem; color: var(--primary-dark);">Room Details</h3>
+                <button type="button" onclick="closeRoomModalDirect()" style="background: none; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer;">&times;</button>
+            </div>
+            <div id="modalRoomBody" style="padding: 1.5rem;">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function filterRooms(status, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            const cards = document.querySelectorAll('.room-item');
+            cards.forEach(card => {
+                const s = card.getAttribute('data-status');
+                if (status === 'ALL') {
+                    card.style.display = '';
+                } else if (status === 'AVAILABLE' || status === 'UNRESERVED') {
+                    card.style.display = (s === 'AVAILABLE') ? '' : 'none';
+                } else if (status === 'OCCUPIED') {
+                    card.style.display = (s === 'OCCUPIED') ? '' : 'none';
+                } else if (status === 'MAINTENANCE') {
+                    card.style.display = (s === 'MAINTENANCE') ? '' : 'none';
+                } else if (status === 'RESERVED' || status === 'PREBOOKED') {
+                    // Filter matching
+                    card.style.display = (s === 'AVAILABLE' || s === 'OCCUPIED') ? '' : 'none';
+                } else {
+                    card.style.display = '';
+                }
+            });
+        }
+
+        async function openRoomModal(roomId) {
+            const modal = document.getElementById('roomModal');
+            const body = document.getElementById('modalRoomBody');
+            const title = document.getElementById('modalRoomTitle');
+            modal.style.display = 'flex';
+            body.innerHTML = '<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--gold-accent);"></i><p style="margin-top: 0.5rem;">Loading room operations data...</p></div>';
+
+            try {
+                const res = await fetch('/staff/api/operations/room/' + roomId);
+                const r = await res.json();
+
+                title.textContent = 'Room ' + r.roomNumber + ' (' + r.category + ')';
+
+                let guestSection = '';
+                if (r.hasGuest) {
+                    guestSection = `
+                        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-top: 1.25rem;">
+                            <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--primary-dark); margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
+                                <i class="fas fa-user-check" style="color: #0284c7;"></i> Associated Guest Reservation (${r.bookingReference})
+                            </h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.82rem;">
+                                <div><strong>Guest:</strong> ${r.guestName}</div>
+                                <div><strong>Contact:</strong> ${r.guestPhone}</div>
+                                <div><strong>Check-in:</strong> ${r.checkInDate}</div>
+                                <div><strong>Check-out:</strong> ${r.checkOutDate}</div>
+                                <div><strong>Guests:</strong> ${r.numberOfGuests}</div>
+                                <div><strong>Status:</strong> <span class="badge" style="background: #e0f2fe; color: #0369a1;">${r.bookingStatus}</span></div>
+                            </div>
+                            ${r.specialRequests ? `<div style="margin-top: 0.5rem; font-size: 0.78rem; color: var(--text-muted);"><strong>Special Requests:</strong> ${r.specialRequests}</div>` : ''}
+                        </div>
+                    `;
+                } else {
+                    guestSection = `
+                        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; margin-top: 1.25rem; font-size: 0.82rem; color: var(--text-muted);">
+                            <i class="fas fa-info-circle"></i> No guest currently occupying or immediately scheduled for this room.
+                        </div>
+                    `;
+                }
+
+                body.innerHTML = `
+                    <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <img src="${r.imageUrl || '/images/default-room.jpg'}" style="width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius-sm);" alt="Room image">
+                        <div style="font-size: 0.85rem;">
+                            <div style="font-weight: 700; font-size: 1rem; color: var(--primary-dark);">${r.hotelName}</div>
+                            <div style="color: var(--text-muted); font-size: 0.78rem;">${r.city}, ${r.state} &bull; Floor ${r.floorNumber}</div>
+                            <div style="margin-top: 0.35rem;">Status: <strong class="badge badge-success">${r.statusDisplay}</strong></div>
+                            <div style="margin-top: 0.25rem; color: var(--gold-accent); font-weight: 700;">₹${Number(r.basePrice).toLocaleString()}/night</div>
+                        </div>
+                    </div>
+                    ${guestSection}
+                    <form action="/staff/room-status/${r.roomId}" method="post" style="margin-top: 1.25rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <input type="hidden" name="_csrf" value="${document.querySelector('meta[name=_csrf]') ? document.querySelector('meta[name=_csrf]').content : ''}" />
+                        <label class="form-label" style="font-size: 0.78rem; text-transform: uppercase;">Update Operational Room Status</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <select name="status" class="form-control" style="font-size: 0.85rem;">
+                                <option value="AVAILABLE" ${r.status === 'AVAILABLE' ? 'selected' : ''}>Available</option>
+                                <option value="OCCUPIED" ${r.status === 'OCCUPIED' ? 'selected' : ''}>Occupied</option>
+                                <option value="MAINTENANCE" ${r.status === 'MAINTENANCE' ? 'selected' : ''}>Maintenance</option>
+                                <option value="CLEANING" ${r.status === 'CLEANING' ? 'selected' : ''}>Cleaning</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save Status</button>
+                        </div>
+                    </form>
+                `;
+            } catch (err) {
+                body.innerHTML = '<div class="alert alert-danger">Error loading room details. Please try again.</div>';
+            }
+        }
+
+        function closeRoomModal(event) {
+            if (event.target.id === 'roomModal') {
+                document.getElementById('roomModal').style.display = 'none';
+            }
+        }
+
+        function closeRoomModalDirect() {
+            document.getElementById('roomModal').style.display = 'none';
+        }
+        /*]]>*/
+    </script>
+
+</body>
+</html>

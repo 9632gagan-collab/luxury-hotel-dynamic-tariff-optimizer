@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Luxury Rooms | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Search &amp; Book Luxury Suites</h1>
+                <p class="page-subtitle">Find rooms tailored to your personalized comfort and requirements</p>
+            </div>
+        </div>
+
+        <!-- Guest Sub Navigation -->
+        <nav class="sub-navbar">
+            <a href="/guest/dashboard" class="sub-nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a href="/guest/search-rooms" class="sub-nav-item active"><i class="fas fa-search"></i> Search Rooms</a>
+            <a href="/guest/my-bookings" class="sub-nav-item"><i class="fas fa-calendar-check"></i> My Bookings</a>
+            <a href="/guest/profile" class="sub-nav-item"><i class="fas fa-user-cog"></i> Profile &amp; Preferences</a>
+        </nav>
+
+        <!-- Search / Filter Card -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-body">
+                <form action="/rooms" method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: flex-end;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="categoryFilter"><i class="fas fa-bed"></i> Room Category</label>
+                        <select id="categoryFilter" name="category" class="form-control">
+                            <option value="">All Categories</option>
+                            <option th:each="cat : ${categories}" th:value="${cat.name()}" th:text="${cat.displayName}">Deluxe Room</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="checkIn"><i class="fas fa-calendar-alt"></i> Check-In Date</label>
+                        <input type="date" id="checkIn" class="form-control">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="checkOut"><i class="fas fa-calendar-alt"></i> Check-Out Date</label>
+                        <input type="date" id="checkOut" class="form-control">
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fas fa-filter"></i> Apply Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Room Listing Grid -->
+        <div class="room-grid">
+            <div th:each="room : ${rooms}" class="room-card">
+                <div class="room-image-wrap">
+                    <img th:src="${room.imageUrl}" th:alt="${room.category.displayName}" class="room-image">
+                    <span class="room-category-pill" th:text="${room.category.displayName}">Deluxe Room</span>
+                    <span class="room-status-badge badge" th:classappend="${room.status.badgeClass}" th:text="${room.status.displayName}">Available</span>
+                </div>
+                <div class="room-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="room-number" th:text="'Room ' + ${room.roomNumber}">Room 101</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fas fa-users"></i> Up to <span th:text="${room.maxOccupancy}">2</span> Guests</span>
+                    </div>
+                    <p class="room-desc" th:text="${room.description}">Spacious room with king bed, marble bathroom, and city view.</p>
+                    
+                    <div class="room-amenities">
+                        <span th:each="amenity : ${room.amenities}" class="amenity-tag">
+                            <i th:class="${amenity.iconClass}"></i> <span th:text="${amenity.name}">Wi-Fi</span>
+                        </span>
+                    </div>
+
+                    <div class="room-pricing">
+                        <div>
+                            <span class="price-label">Dynamic Tariff</span>
+                            <div class="price-val" th:text="'₹' + ${#numbers.formatDecimal(room.currentTariff, 1, 2)}">₹4,500.00</div>
+                        </div>
+                        <span th:if="${room.status.name() == 'AVAILABLE'}">
+                            <a th:href="@{/bookings/new(roomId=${room.id})}" class="btn btn-primary btn-sm">Reserve Now</a>
+                        </span>
+                        <span th:unless="${room.status.name() == 'AVAILABLE'}">
+                            <button class="btn btn-outline btn-sm" disabled style="opacity: 0.6;">Unavailable</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Request to Admin | Royal Indian Stays Staff</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Send Request to Admin</h1>
+                <p class="page-subtitle">Submit operational inquiries, leave applications, or management requests</p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.75rem; align-items: center;">
+                <a th:href="@{/staff/messages/inbox}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to Messages
+                </a>
+            </div>
+        </div>
+
+        <!-- Staff Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/staff/dashboard}" class="sub-nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a th:href="@{/staff/notifications}" class="sub-nav-item"><i class="fas fa-bell"></i> Notifications (<span th:text="${unreadNotificationCount != null ? unreadNotificationCount : 0}">0</span>)</a>
+            <a th:href="@{/staff/messages/inbox}" class="sub-nav-item active"><i class="fas fa-envelope"></i> Messages &amp; Requests</a>
+            <a th:href="@{/staff/messages/new}" class="sub-nav-item"><i class="fas fa-paper-plane"></i> Send Request</a>
+            <a th:href="@{/staff/profile}" class="sub-nav-item"><i class="fas fa-user-circle"></i> Profile</a>
+        </nav>
+
+        <!-- Message Sub Tabs -->
+        <div class="msg-tabs-bar">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a th:href="@{/staff/messages/inbox}" class="msg-tab-item">
+                    <i class="fas fa-inbox"></i> Inbox
+                </a>
+                <a th:href="@{/staff/messages/sent}" class="msg-tab-item">
+                    <i class="fas fa-history"></i> Sent Requests &amp; History
+                </a>
+            </div>
+            <div>
+                <span class="btn btn-primary btn-sm" style="font-size: 0.8rem; padding: 0.45rem 0.9rem; opacity: 0.9; cursor: default;">
+                    <i class="fas fa-paper-plane"></i> New Request Form
+                </span>
+            </div>
+        </div>
+
+        <div style="max-width: 800px; margin: 0 auto;">
+            <!-- Informational Banner -->
+            <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: var(--radius-sm); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.85rem;">
+                <i class="fas fa-info-circle" style="color: var(--info); font-size: 1.35rem; flex-shrink: 0;"></i>
+                <div style="font-size: 0.86rem; color: var(--primary-dark); line-height: 1.45;">
+                    <strong>Direct Administrative Broadcast:</strong> Your request will automatically be delivered to <strong>all active executive administrators</strong>. You do not need to choose a specific admin.
+                </div>
+            </div>
+
+            <!-- Request Form Card -->
+            <div class="card" style="padding: 2rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                    <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: rgba(197, 160, 89, 0.15); display: flex; align-items: center; justify-content: center; color: var(--gold-accent); font-size: 1.2rem;">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-family: 'Cinzel', serif; font-size: 1.2rem; color: var(--primary-dark); margin: 0;">New Request to Administration</h3>
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.15rem 0 0;">Fill in your request details below. Administrators will be alerted instantly.</p>
+                    </div>
+                </div>
+
+                <form th:action="@{/staff/messages/new}" th:object="${requestDto}" method="post" id="staffRequestForm">
+
+                    <!-- Global errors -->
+                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" style="margin-bottom: 1.5rem;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</span>
+                    </div>
+
+                    <!-- Request Type Dropdown -->
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label" for="requestType" style="font-weight: 700;">
+                            Request Type <span style="color: #dc2626;">*</span>
+                        </label>
+                        <select id="requestType"
+                                th:field="*{requestType}"
+                                class="form-control"
+                                th:classappend="${#fields.hasErrors('requestType')} ? 'is-invalid' : ''">
+                            <option value="">-- Select Category of Request --</option>
+                            <option value="General message">General message</option>
+                            <option value="Permission request">Permission request</option>
+                            <option value="Leave request">Leave request</option>
+                            <option value="Work-related request">Work-related request</option>
+                            <option value="Operational request">Operational request</option>
+                            <option value="Other request">Other request</option>
+                        </select>
+                        <div th:if="${#fields.hasErrors('requestType')}" class="form-error" style="color: #dc2626; font-size: 0.82rem; margin-top: 0.35rem;">
+                            <i class="fas fa-exclamation-circle"></i> <span th:errors="*{requestType}">Please select a request type.</span>
+                        </div>
+                    </div>
+
+                    <!-- Subject Input -->
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label" for="subject" style="font-weight: 700;">
+                            Subject <span style="color: #dc2626;">*</span>
+                        </label>
+                        <input type="text"
+                               id="subject"
+                               th:field="*{subject}"
+                               class="form-control"
+                               placeholder="e.g. Request for Shift Rescheduling on Saturday"
+                               th:classappend="${#fields.hasErrors('subject')} ? 'is-invalid' : ''">
+                        <div th:if="${#fields.hasErrors('subject')}" class="form-error" style="color: #dc2626; font-size: 0.82rem; margin-top: 0.35rem;">
+                            <i class="fas fa-exclamation-circle"></i> <span th:errors="*{subject}">Subject is required.</span>
+                        </div>
+                    </div>
+
+                    <!-- Message Body -->
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label class="form-label" for="content" style="font-weight: 700;">
+                            Message / Request Description <span style="color: #dc2626;">*</span>
+                        </label>
+                        <textarea id="content"
+                                  th:field="*{content}"
+                                  class="form-control"
+                                  rows="7"
+                                  placeholder="Provide clear details regarding your request or operational update..."
+                                  th:classappend="${#fields.hasErrors('content')} ? 'is-invalid' : ''"></textarea>
+                        <div th:if="${#fields.hasErrors('content')}" class="form-error" style="color: #dc2626; font-size: 0.82rem; margin-top: 0.35rem;">
+                            <i class="fas fa-exclamation-circle"></i> <span th:errors="*{content}">Message content is required.</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                        <a th:href="@{/staff/messages/inbox}" class="btn btn-outline">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="sendStaffRequestBtn" style="padding: 0.65rem 1.75rem;">
+                            <i class="fas fa-paper-plane"></i> Submit Request to Admin
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

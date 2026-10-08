@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Profile | Executive Administration</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Administrator Profile</h1>
+                <p class="page-subtitle">Executive privileges and system security parameters</p>
+            </div>
+            <div class="page-actions">
+                <a th:href="@{/admin/dashboard}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Admin Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/admin/dashboard}" class="sub-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/admin/staff/add}" class="sub-nav-item"><i class="fas fa-user-plus"></i> Add Staff</a>
+            <a th:href="@{/admin/staff}" class="sub-nav-item"><i class="fas fa-users-cog"></i> Staff List</a>
+            <a th:href="@{/admin/guests}" class="sub-nav-item"><i class="fas fa-user-friends"></i> Guest List</a>
+            <a th:href="@{/admin/profile}" class="sub-nav-item active"><i class="fas fa-id-card"></i> Admin Profile</a>
+        </nav>
+
+        <div style="display: flex; justify-content: center;">
+            <div style="max-width: 680px; width: 100%;">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar-circle">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h2 style="color: #ffffff; font-size: 1.5rem; margin-bottom: 0.25rem;" th:text="${admin.username}">ADMIN</h2>
+                        <span class="badge" style="background: var(--gold-accent); color: var(--primary-dark); font-weight: 700; letter-spacing: 0.5px;">
+                            SYSTEM EXECUTIVE ADMINISTRATOR
+                        </span>
+                    </div>
+
+                    <div style="padding: 2rem;">
+                        <h4 style="font-size: 1rem; color: var(--primary-dark); margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                            Account Specifications
+                        </h4>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Admin Identifier</label>
+                                <div style="font-size: 1.05rem; font-weight: 600; color: var(--primary-dark);" th:text="${admin.username}">GAGAN</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">System Role</label>
+                                <div><span class="badge" style="background: #e0e7ff; color: #3730a3; font-weight: 600;">ROLE_ADMIN</span></div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Account Status</label>
+                                <div>
+                                    <span th:if="${admin.status != null and admin.status.name() == 'ACTIVE'}" class="badge-active">
+                                        <i class="fas fa-check-circle"></i> ACTIVE
+                                    </span>
+                                    <span th:unless="${admin.status != null and admin.status.name() == 'ACTIVE'}" class="badge-inactive">
+                                        <i class="fas fa-ban"></i> INACTIVE
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Account Created</label>
+                                <div style="font-size: 0.95rem; color: var(--text-dark);" th:text="${#temporals.format(admin.createdAt, 'dd MMM yyyy, HH:mm')}">Date</div>
+                            </div>
+                        </div>
+
+                        <h4 style="font-size: 1rem; color: var(--primary-dark); margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                            Stage 2 Privileges
+                        </h4>
+
+                        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.88rem; color: var(--text-dark);">
+                            <li style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-check-circle" style="color: var(--success);"></i> User Provisioning: Create, authorize, and manage Hotel Staff accounts
+                            </li>
+                            <li style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-check-circle" style="color: var(--success);"></i> Directory Auditing: View complete ledgers of all Registered Guests and Staff
+                            </li>
+                            <li style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-check-circle" style="color: var(--success);"></i> Role-Based Security: Enforce three-role portal isolation via Spring Security
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

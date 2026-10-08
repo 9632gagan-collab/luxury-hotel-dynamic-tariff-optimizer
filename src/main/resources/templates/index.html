@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Indian Stays | Discover Luxury Across India</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="theme-color" content="#0a1128">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Royal Indian Stays">
+    <link rel="manifest" th:href="@{/manifest.json}">
+    <link rel="apple-touch-icon" th:href="@{/images/logo.png}">
+</head>
+<body class="home-page">
+
+    <!-- Home Page Scroll-Driven Cinematic Background Animation Layer -->
+    <div id="homeBgAnimLayer" class="home-bg-anim-layer" aria-hidden="true">
+        <canvas id="homeBgCanvas"></canvas>
+        <div class="home-bg-scrim"></div>
+    </div>
+
+    <!-- Header Fragment (With Staff & Admin Access menu) -->
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <!-- Main Hero Section (Requirement 15) -->
+        <section class="hero-section luxury-load-hero" style="padding: 4.5rem 1.5rem; text-align: center; color: #ffffff; border-radius: var(--radius-md); margin-bottom: 3.5rem; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -50px; left: -50px; width: 250px; height: 250px; background: rgba(197, 160, 89, 0.08); border-radius: 50%; filter: blur(60px); pointer-events: none;"></div>
+            <div style="position: absolute; bottom: -50px; right: -50px; width: 300px; height: 300px; background: rgba(14, 165, 233, 0.08); border-radius: 50%; filter: blur(80px); pointer-events: none;"></div>
+
+            <canvas class="hero-logo-img hero-logo-item royal-animated-logo" width="512" height="512" role="img" aria-label="Royal Indian Stays Logo" style="max-width: 260px; width: 220px; height: 220px; margin-bottom: 1.5rem; border-radius: var(--radius-sm); filter: drop-shadow(0 8px 24px rgba(0,0,0,0.6)); display: inline-block;"></canvas>
+            
+            <div class="hero-badge-tag hero-badge-item luxury-load-item" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(197, 160, 89, 0.2); border: 1px solid var(--gold-accent); padding: 0.35rem 0.9rem; border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 700; color: var(--gold-accent); margin-bottom: 1.25rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                <i class="fas fa-crown"></i> India Luxury Hotel Discovery &bull; Project P68
+            </div>
+
+            <h1 class="hero-title hero-title-item luxury-load-item" style="font-size: 2.8rem; font-family: 'Cinzel', serif; font-weight: 700; margin-bottom: 1rem; color: #ffffff; letter-spacing: 0.5px;">
+                Discover Luxury Across India
+            </h1>
+            <p class="hero-subtitle hero-subtitle-item luxury-load-item" style="font-size: 1.15rem; color: #cbd5e1; max-width: 780px; margin: 0 auto 2.25rem; line-height: 1.6; font-weight: 300;">
+                Explore premium hotels, resorts and unique stays across India's states and cities.
+            </p>
+
+            <div class="hero-actions hero-actions-item luxury-load-item" style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                <a th:href="@{/hotels}" class="btn btn-primary" style="padding: 0.85rem 2.25rem; font-size: 1rem; box-shadow: var(--shadow-gold);">
+                    <i class="fas fa-search-location"></i> Find Hotels
+                </a>
+                <a th:href="@{/map}" class="btn btn-outline" style="color: #ffffff; border-color: rgba(255,255,255,0.75); padding: 0.85rem 1.75rem;">
+                    <i class="fas fa-map-marked-alt"></i> Explore on India Map
+                </a>
+                <a th:href="@{/login(role='GUEST')}" class="btn btn-dark" style="padding: 0.85rem 1.75rem; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2);">
+                    <i class="fas fa-sign-in-alt"></i> Guest Sign In
+                </a>
+            </div>
+        </section>
+
+        <!-- Karnataka Luxury Spotlight Banner (Preserves Stage 2 Test Requirements) -->
+        <section class="karnataka-spotlight luxury-load-item luxury-scroll-reveal" style="margin-bottom: 3.5rem; border-radius: var(--radius-md); padding: 1.75rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
+            <div>
+                <span class="badge" style="background: rgba(197, 160, 89, 0.15); color: var(--primary-dark); font-weight: 700; font-size: 0.75rem; padding: 0.25rem 0.65rem; border-radius: var(--radius-full);"><i class="fas fa-star" style="color: var(--gold-accent);"></i> Verified Southern Royal Heritage</span>
+                <h2 style="font-size: 1.45rem; font-family: 'Cinzel', serif; color: var(--primary-dark); margin: 0.4rem 0 0.25rem;">Discover Luxury Hotels Across Karnataka</h2>
+                <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Palaces in Bengaluru &amp; Mysuru, coffee plantation sanctuaries in Coorg &amp; Chikkamagaluru, and Vijayanagara royal ruins in Hampi.</p>
+            </div>
+            <a th:href="@{/hotels(state='Karnataka')}" class="btn btn-primary btn-sm" style="padding: 0.65rem 1.25rem; white-space: nowrap;">
+                <i class="fas fa-compass"></i> Explore All Karnataka Hotels <i class="fas fa-arrow-right"></i>
+            </a>
+        </section>
+
+        <!-- India Destinations Section (Requirement 16) -->
+        <section style="margin-bottom: 4rem;">
+            <div class="section-intro-card luxury-scroll-reveal" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--gold-accent); letter-spacing: 0.05em;">Curated Regional Destinations</span>
+                    <h2 class="brand-font" style="font-size: 1.85rem; color: var(--primary-dark); margin-top: 0.25rem;">Featured Luxury Destinations Across India</h2>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">Select a destination card to browse verified luxury palaces, coastal retreats, and mountain lodges.</p>
+                </div>
+                <a th:href="@{/hotels}" class="btn btn-outline btn-sm">
+                    View All Destinations <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="destinations-grid">
+                <!-- 1. Karnataka -->
+                <a th:href="@{/hotels(state='Karnataka')}" class="destination-card luxury-scroll-reveal">
+                    <div class="destination-img-wrap">
+                        <img th:src="@{/images/destinations/karnataka-mysore-palace.jpg}" alt="Mysuru Palace Karnataka" class="destination-img" loading="lazy">
+                        <span class="destination-count-badge">10 Stays</span>
+                    </div>
+                    <div class="destination-body">
+                        <div>
+                            <h3 class="destination-title">Karnataka</h3>
+                            <div class="destination-cities">Bengaluru &bull; Mysuru &bull; Coorg</div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">Vijayanagara-inspired palaces, heritage garden hotels, and misty Western Ghats coffee estates.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 2. Maharashtra -->
+                <a th:href="@{/hotels(state='Maharashtra')}" class="destination-card luxury-scroll-reveal">
+                    <div class="destination-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=800&q=80" alt="Gateway of India Mumbai Maharashtra" class="destination-img" loading="lazy">
+                        <span class="destination-count-badge">6 Stays</span>
+                    </div>
+                    <div class="destination-body">
+                        <div>
+                            <h3 class="destination-title">Maharashtra</h3>
+                            <div class="destination-cities">Mumbai &bull; Pune &bull; Nashik</div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">Arabian Sea waterfront palaces, Sahyadri foothill spa resorts, and cosmopolitan city luxury.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 3. Tamil Nadu -->
+                <a th:href="@{/hotels(state='Tamil Nadu')}" class="destination-card luxury-scroll-reveal">
+                    <div class="destination-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80" alt="Meenakshi Temple Tamil Nadu" class="destination-img" loading="lazy">
+                        <span class="destination-count-badge">5 Stays</span>
+                    </div>
+                    <div class="destination-body">
+                        <div>
+                            <h3 class="destination-title">Tamil Nadu</h3>
+                            <div class="destination-cities">Chennai &bull; Ooty &bull; Coimbatore</div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">Chettinad seaface palaces, temple-tank retreats, and colonial Nilgiris mountain manors.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 4. Kerala -->
+                <a th:href="@{/hotels(state='Kerala')}" class="destination-card luxury-scroll-reveal">
+                    <div class="destination-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80" alt="Kerala Backwaters" class="destination-img" loading="lazy">
+                        <span class="destination-count-badge">5 Stays</span>
+                    </div>
+                    <div class="destination-body">
+                        <div>
+                            <h3 class="destination-title">Kerala</h3>
+                            <div class="destination-cities">Kochi &bull; Munnar &bull; Thiruvananthapuram</div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">Dramatic cliff-top beach sanctuaries, harbor island havens, and tea plantation waterfall lodges.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 5. Rajasthan -->
+                <a th:href="@{/hotels(state='Rajasthan')}" class="destination-card luxury-scroll-reveal">
+                    <div class="destination-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80" alt="Hawa Mahal Jaipur Rajasthan" class="destination-img" loading="lazy">
+                        <span class="destination-count-badge">5 Stays</span>
+                    </div>
+                    <div class="destination-body">
+                        <div>
+                            <h3 class="destination-title">Rajasthan</h3>
+                            <div class="destination-cities">Jaipur &bull; Udaipur &bull; Jodhpur</div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">Authentic royal Maharaja palaces, floating lake pavilions, and desert sandstone fortresses.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 6. Goa -->
+                <a th:href="@{/hotels(state='Goa')}" class="destination-card luxury-scroll-reveal">
+                    <div class="destination-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=800&q=80" alt="Goa Beaches" class="destination-img" loading="lazy">
+                        <span class="destination-count-badge">4 Stays</span>
+                    </div>
+                    <div class="destination-body">
+                        <div>
+                            <h3 class="destination-title">Goa</h3>
+                            <div class="destination-cities">North Goa &bull; South Goa</div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">Private beachfront villas, 16th-century fortress ramparts, and golf lagoon havens.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 7. Delhi -->
+                <a th:href="@{/hotels(state='Delhi')}" class="destination-card luxury-scroll-reveal">
+                    <div class="destination-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=800&q=80" alt="India Gate New Delhi" class="destination-img" loading="lazy">
+                        <span class="destination-count-badge">4 Stays</span>
+                    </div>
+                    <div class="destination-body">
+                        <div>
+                            <h3 class="destination-title">Delhi</h3>
+                            <div class="destination-cities">New Delhi</div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">Lutyens palatial landmarks, rooftop infinity pools, and world-renowned dining institutions.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 8. West Bengal -->
+                <a th:href="@{/hotels(state='West Bengal')}" class="destination-card luxury-scroll-reveal">
+                    <div class="destination-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=800&q=80" alt="Victoria Memorial Kolkata West Bengal" class="destination-img" loading="lazy">
+                        <span class="destination-count-badge">4 Stays</span>
+                    </div>
+                    <div class="destination-body">
+                        <div>
+                            <h3 class="destination-title">West Bengal</h3>
+                            <div class="destination-cities">Kolkata &bull; Darjeeling</div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">Victorian grande dames, modern renaissance palace hotels, and Makaibari tea estate retreats.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 9. Himachal Pradesh -->
+                <a th:href="@{/hotels(state='Himachal Pradesh')}" class="destination-card luxury-scroll-reveal">
+                    <div class="destination-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80" alt="Himalayas Himachal Pradesh" class="destination-img" loading="lazy">
+                        <span class="destination-count-badge">4 Stays</span>
+                    </div>
+                    <div class="destination-body">
+                        <div>
+                            <h3 class="destination-title">Himachal Pradesh</h3>
+                            <div class="destination-cities">Shimla &bull; Manali</div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">Himalayan cedar sanctuaries, open-air whirlpool jacuzzis, and Victorian Gothic stone castles.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 10. Uttarakhand -->
+                <a th:href="@{/hotels(state='Uttarakhand')}" class="destination-card luxury-scroll-reveal">
+                    <div class="destination-img-wrap">
+                        <img th:src="@{/images/destinations/uttarakhand-rishikesh.jpg}" alt="Lakshman Jhula Rishikesh Uttarakhand" class="destination-img" loading="lazy">
+                        <span class="destination-count-badge">4 Stays</span>
+                    </div>
+                    <div class="destination-body">
+                        <div>
+                            <h3 class="destination-title">Uttarakhand</h3>
+                            <div class="destination-cities">Dehradun &bull; Rishikesh &bull; Nainital</div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">World-acclaimed wellness palace estates, sacred Ganges beaches, and Garhwal mountain havens.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 11. Uttar Pradesh -->
+                <a th:href="@{/hotels(state='Uttar Pradesh')}" class="destination-card luxury-scroll-reveal">
+                    <div class="destination-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=800&q=80" alt="Taj Mahal Agra Uttar Pradesh" class="destination-img" loading="lazy">
+                        <span class="destination-count-badge">4 Stays</span>
+                    </div>
+                    <div class="destination-body">
+                        <div>
+                            <h3 class="destination-title">Uttar Pradesh</h3>
+                            <div class="destination-cities">Agra &bull; Lucknow &bull; Varanasi</div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">Taj Mahal view suites, Awadhi Nawabi riverfront palaces, and Nadesar gardens in Varanasi.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 12. More Verified States -->
+                <a th:href="@{/hotels}" class="destination-card more-states-card luxury-scroll-reveal" style="color: #ffffff;">
+                    <div class="destination-body" style="padding: 2rem; justify-content: center; text-align: center;">
+                        <i class="fas fa-map-marked-alt" style="font-size: 2.5rem; color: var(--gold-accent); margin-bottom: 1rem;"></i>
+                        <h3 class="destination-title" style="color: #ffffff;">More Verified States</h3>
+                        <div class="destination-cities" style="color: var(--gold-light);">Kashmir &bull; Hyderabad &bull; Punjab &bull; Bhopal</div>
+                        <p style="font-size: 0.82rem; color: #cbd5e1; margin-top: 0.5rem;">Explore all 15 States and Union Territories on the interactive India map.</p>
+                        <span class="btn btn-primary btn-sm" style="margin-top: 1rem; align-self: center;">Explore All States</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Interactive India Map Section (Requirement 17) -->
+        <section id="mapSection" style="margin-bottom: 4rem;">
+            <div class="section-intro-card luxury-scroll-reveal" style="text-align: center; max-width: 650px; margin: 0 auto 2rem;">
+                <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--gold-accent); letter-spacing: 0.05em;">Interactive Spatial Discovery</span>
+                <h2 class="brand-font" style="font-size: 2rem; color: var(--primary-dark); margin-top: 0.35rem;">Explore India by Map</h2>
+                <p style="font-size: 0.95rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    Select a state to explore hotels and destinations.
+                </p>
+            </div>
+
+            <!-- Two-Column Map Layout: Left SVG Map, Right Dynamic State Info Drawer -->
+            <div class="map-dashboard-grid">
+                <div class="map-svg-container luxury-scroll-reveal">
+                    <div th:replace="~{fragments/india-map-svg :: indiaMapSvg}"></div>
+                </div>
+
+                <!-- Live State Selection Drawer on Home Page -->
+                <div class="state-detail-panel luxury-scroll-reveal" id="homeStatePanel">
+                    <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--gold-accent); letter-spacing: 0.05em;">Selected State</span>
+                    <h3 class="brand-font" id="drawerStateTitle" style="font-size: 1.6rem; color: var(--primary-dark); margin: 0.35rem 0;">Karnataka</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;" id="drawerStateDesc">
+                        Home to 10 verified luxury properties in Bengaluru Urban, Mysuru, Kodagu, Chikkamagaluru, and Vijayanagara.
+                    </p>
+
+                    <div class="state-stat-box" style="border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.25rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Verified Properties:</span>
+                            <strong style="color: var(--gold-accent); font-size: 1.1rem;" id="drawerHotelCount">10 Hotels</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Key Districts:</span>
+                            <span style="font-size: 0.8rem; font-weight: 600; color: var(--primary-dark);" id="drawerDistrictsCount">5 Districts</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <span style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 0.5rem;">Verified Districts</span>
+                        <div class="district-pill-selector" id="drawerDistrictPills">
+                            <span class="district-btn">Bengaluru Urban</span>
+                            <span class="district-btn">Mysuru</span>
+                            <span class="district-btn">Kodagu</span>
+                            <span class="district-btn">Chikkamagaluru</span>
+                            <span class="district-btn">Vijayanagara</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <a id="drawerExploreBtn" th:href="@{/hotels(state='Karnataka')}" class="btn btn-primary" style="text-align: center; width: 100%;">
+                            <i class="fas fa-search"></i> Explore Hotels in This State
+                        </a>
+                        <a th:href="@{/map}" class="btn btn-outline" style="text-align: center; width: 100%;">
+                            <i class="fas fa-expand"></i> Open Full Map Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Experiences Section (Requirement 18) -->
+        <section style="margin-bottom: 4rem;">
+            <div class="section-intro-card luxury-scroll-reveal" style="text-align: center; max-width: 600px; margin: 0 auto 2rem;">
+                <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--gold-accent); letter-spacing: 0.05em;">Curated Themes</span>
+                <h2 class="brand-font" style="font-size: 1.85rem; color: var(--primary-dark); margin-top: 0.25rem;">Featured Luxury Experiences</h2>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">Discover verified retreats tailored to your preferred journey style.</p>
+            </div>
+
+            <div class="experience-grid">
+                <!-- 1. City Luxury -->
+                <a th:href="@{/hotels(experience='City Luxury')}" class="experience-card luxury-scroll-reveal">
+                    <div>
+                        <div class="experience-icon-wrap"><i class="fas fa-city"></i></div>
+                        <h4 class="brand-font" style="font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 0.4rem;">City Luxury</h4>
+                        <p style="font-size: 0.83rem; color: var(--text-muted); line-height: 1.5;">Metropolitan 5-star grandeur, Michelin dining, and central luxury retail access.</p>
+                    </div>
+                    <span style="font-size: 0.78rem; color: var(--gold-accent); font-weight: 600; margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Explore Stays <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
+                    </span>
+                </a>
+
+                <!-- 2. Beach Escapes -->
+                <a th:href="@{/hotels(experience='Beach')}" class="experience-card luxury-scroll-reveal">
+                    <div>
+                        <div class="experience-icon-wrap"><i class="fas fa-umbrella-beach"></i></div>
+                        <h4 class="brand-font" style="font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 0.4rem;">Beach Escapes</h4>
+                        <p style="font-size: 0.83rem; color: var(--text-muted); line-height: 1.5;">Private Arabian Sea beaches, cliff-edge infinity pools, and coastal seafood pavilions.</p>
+                    </div>
+                    <span style="font-size: 0.78rem; color: var(--gold-accent); font-weight: 600; margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Explore Stays <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
+                    </span>
+                </a>
+
+                <!-- 3. Heritage Hotels -->
+                <a th:href="@{/hotels(experience='Heritage')}" class="experience-card luxury-scroll-reveal">
+                    <div>
+                        <div class="experience-icon-wrap"><i class="fas fa-monument"></i></div>
+                        <h4 class="brand-font" style="font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 0.4rem;">Heritage Hotels</h4>
+                        <p style="font-size: 0.83rem; color: var(--text-muted); line-height: 1.5;">Centuries-old royal residences, colonial high-tea verandas, and living Indian history.</p>
+                    </div>
+                    <span style="font-size: 0.78rem; color: var(--gold-accent); font-weight: 600; margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Explore Stays <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
+                    </span>
+                </a>
+
+                <!-- 4. Mountain Retreats -->
+                <a th:href="@{/hotels(experience='Mountain')}" class="experience-card luxury-scroll-reveal">
+                    <div>
+                        <div class="experience-icon-wrap"><i class="fas fa-mountain"></i></div>
+                        <h4 class="brand-font" style="font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 0.4rem;">Mountain Retreats</h4>
+                        <p style="font-size: 0.83rem; color: var(--text-muted); line-height: 1.5;">Cedar pine forest sanctuaries, open-air heated jacuzzis, and alpine snow panoramas.</p>
+                    </div>
+                    <span style="font-size: 0.78rem; color: var(--gold-accent); font-weight: 600; margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Explore Stays <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
+                    </span>
+                </a>
+
+                <!-- 5. Nature & Wildlife -->
+                <a th:href="@{/hotels(experience='Nature & Wildlife')}" class="experience-card luxury-scroll-reveal">
+                    <div>
+                        <div class="experience-icon-wrap"><i class="fas fa-paw"></i></div>
+                        <h4 class="brand-font" style="font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 0.4rem;">Nature &amp; Wildlife</h4>
+                        <p style="font-size: 0.83rem; color: var(--text-muted); line-height: 1.5;">Protected jungle reserves, Kabini river safaris, and Nagarhole elephant sanctuaries.</p>
+                    </div>
+                    <span style="font-size: 0.78rem; color: var(--gold-accent); font-weight: 600; margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Explore Stays <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
+                    </span>
+                </a>
+
+                <!-- 6. Wellness & Spa -->
+                <a th:href="@{/hotels(experience='Wellness')}" class="experience-card luxury-scroll-reveal">
+                    <div>
+                        <div class="experience-icon-wrap"><i class="fas fa-spa"></i></div>
+                        <h4 class="brand-font" style="font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 0.4rem;">Wellness &amp; Spa</h4>
+                        <p style="font-size: 0.83rem; color: var(--text-muted); line-height: 1.5;">Authentic Ayurveda, Vedanta yoga temples, hydrotherapy spas, and holistic healing.</p>
+                    </div>
+                    <span style="font-size: 0.78rem; color: var(--gold-accent); font-weight: 600; margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Explore Stays <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
+                    </span>
+                </a>
+
+                <!-- 7. Business Hotels -->
+                <a th:href="@{/hotels(experience='Business Stay')}" class="experience-card luxury-scroll-reveal">
+                    <div>
+                        <div class="experience-icon-wrap"><i class="fas fa-briefcase"></i></div>
+                        <h4 class="brand-font" style="font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 0.4rem;">Business Hotels</h4>
+                        <p style="font-size: 0.83rem; color: var(--text-muted); line-height: 1.5;">Executive club suites, high-speed fiber connectivity, and airport access.</p>
+                    </div>
+                    <span style="font-size: 0.78rem; color: var(--gold-accent); font-weight: 600; margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Explore Stays <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
+                    </span>
+                </a>
+
+                <!-- 8. Family Stays -->
+                <a th:href="@{/hotels(experience='Family Stay')}" class="experience-card luxury-scroll-reveal">
+                    <div>
+                        <div class="experience-icon-wrap"><i class="fas fa-users"></i></div>
+                        <h4 class="brand-font" style="font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 0.4rem;">Family Stays</h4>
+                        <p style="font-size: 0.83rem; color: var(--text-muted); line-height: 1.5;">Multi-bedroom villa suites, private gardens, children's dens, and engaging leisure pools.</p>
+                    </div>
+                    <span style="font-size: 0.78rem; color: var(--gold-accent); font-weight: 600; margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        Explore Stays <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
+                    </span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Why Choose Royal Indian Stays Highlights -->
+        <section class="card academic-card luxury-scroll-reveal" style="border-left: 5px solid var(--gold-accent); margin-bottom: 2.5rem;">
+            <div class="card-header">
+                <h3 class="card-title brand-font" style="font-weight: 700; letter-spacing: 0.5px;"><i class="fas fa-crown" style="color: var(--gold-accent); margin-right: 0.5rem;"></i> Why Choose Royal Indian Stays</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
+                    <div>
+                        <h4 style="color: var(--gold-accent); margin-bottom: 0.35rem; font-weight: 600;"><i class="fas fa-compass" style="margin-right: 0.4rem;"></i> Intelligent Hotel Discovery</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+                            Explore luxury stays across India through a simple State &rarr; District &rarr; Hotel discovery experience.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--gold-accent); margin-bottom: 0.35rem; font-weight: 600;"><i class="fas fa-chart-line" style="margin-right: 0.4rem;"></i> Smart Dynamic Pricing</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+                            Room tariffs adapt intelligently to hotel occupancy, helping guests understand changing prices clearly.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--gold-accent); margin-bottom: 0.35rem; font-weight: 600;"><i class="fas fa-user-shield" style="margin-right: 0.4rem;"></i> Secure Role-Based Access</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+                            Separate Guest, Staff, and Admin access keeps hotel operations and information organized and protected.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--gold-accent); margin-bottom: 0.35rem; font-weight: 600;"><i class="fas fa-concierge-bell" style="margin-right: 0.4rem;"></i> Simple Guest Experience</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+                            Discover, compare, plan, book, and manage stays through one easy-to-use platform.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <!-- Interactive India Map JavaScript -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const stateCounts = /*[[${stateHotelCounts}]]*/ {};
+        const stateDistricts = {
+            "Karnataka": ["Bengaluru Urban", "Mysuru", "Kodagu", "Chikkamagaluru", "Vijayanagara"],
+            "Maharashtra": ["Mumbai City", "Mumbai Suburban", "Pune", "Nashik", "Nagpur"],
+            "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Nilgiris"],
+            "Kerala": ["Ernakulam", "Thiruvananthapuram", "Idukki"],
+            "Rajasthan": ["Jaipur", "Udaipur", "Jodhpur", "Jaisalmer"],
+            "Goa": ["North Goa", "South Goa"],
+            "Delhi": ["New Delhi", "South West Delhi"],
+            "West Bengal": ["Kolkata", "Darjeeling"],
+            "Himachal Pradesh": ["Shimla", "Kullu"],
+            "Uttarakhand": ["Tehri Garhwal", "Dehradun", "Nainital"],
+            "Uttar Pradesh": ["Agra", "Lucknow", "Varanasi"],
+            "Jammu and Kashmir": ["Baramulla", "Srinagar"],
+            "Gujarat": ["Ahmedabad", "Vadodara"],
+            "Telangana": ["Hyderabad"],
+            "Madhya Pradesh": ["Bhopal", "Gwalior"]
+        };
+
+        const stateDescriptions = {
+            "Karnataka": "Palace opulence in Bengaluru & Mysuru, Western Ghats coffee estates in Coorg & Chikkamagaluru, and Hampi UNESCO heritage.",
+            "Maharashtra": "Colaba Arabian Sea landmarks, Juhu coastal luxury, Sahyadri vineyard retreats in Nashik, and Central India tiger gateways.",
+            "Tamil Nadu": "Chettinad seaface palaces in Chennai, Geoffrey Bawa architecture in Madurai, and 180-year-old Nilgiri mountain manors in Ooty.",
+            "Kerala": "Cliff-top Kovalam beach sanctuaries, Cochin harbor yacht retreats, and Munnar waterfall tea plantations.",
+            "Rajasthan": "Authentic royal Maharaja palaces in Jaipur & Jodhpur, Lake Pichola island pavilions in Udaipur, and Thar desert fortresses.",
+            "Goa": "South Goa Mediterranean beach sanctuaries, 16th-century clifftop fortresses, and Vagator luxury lifestyle retreats.",
+            "Delhi": "Lutyens palatial elegance in Chanakyapuri, Edwin Lutyens 1936 Art Deco landmarks, and world-renowned Bukhara dining.",
+            "West Bengal": "Chowringhee Victorian grande dames, EM Bypass renaissance palaces, and Makaibari organic tea estate sanctuaries.",
+            "Himachal Pradesh": "Wildflower cedar sanctuaries at 8,250 feet, open-air whirlpool jacuzzis, and Victorian Gothic stone castles in Manali.",
+            "Uttarakhand": "Palace wellness sanctuaries above Rishikesh, sacred private Ganges beaches, and Garhwal mountain luxury.",
+            "Uttar Pradesh": "Taj Mahal view suites in Agra, Awadhi Nawabi riverfront palaces in Lucknow, and Nadesar Palace gardens in Varanasi.",
+            "Jammu and Kashmir": "Premier alpine ski sanctuaries at 8,825 feet in Gulmarg, and Dal Lake hillside panoramas in Srinagar.",
+            "Gujarat": "Textile heritage city luxury on Sindhu Bhavan Road, and royal Gaekwad hospitality in Alkapuri Vadodara.",
+            "Telangana": "Nizam's 'Mirror of the Sky' Falaknuma Palace at 2,000 feet, and Koh-i-Noor inspired luxury in HITEC City.",
+            "Madhya Pradesh": "Upper Lakefront royal Begum retreats in Bhopal, and 140-year-old royal Scindia palaces in Gwalior."
+        };
+
+        const tooltip = document.getElementById('mapTooltip');
+        const tooltipStateName = document.getElementById('tooltipStateName');
+        const tooltipHotelCount = document.getElementById('tooltipHotelCount');
+        const mapSvg = document.querySelector('.india-map-svg');
+
+        document.querySelectorAll('.map-state').forEach(stateEl => {
+            const stateName = stateEl.getAttribute('data-state');
+            const count = stateCounts[stateName] || 0;
+
+            stateEl.addEventListener('mouseenter', (e) => {
+                tooltipStateName.textContent = stateName;
+                tooltipHotelCount.textContent = count > 0 ? (count + ' Verified Luxury ' + (count === 1 ? 'Stay' : 'Stays')) : 'No verified properties yet';
+                tooltip.style.display = 'block';
+            });
+
+            stateEl.addEventListener('mousemove', (e) => {
+                const rect = mapSvg.getBoundingClientRect();
+                tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
+                tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+            });
+
+            stateEl.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
+            });
+
+            stateEl.addEventListener('click', () => {
+                // Highlight state
+                document.querySelectorAll('.map-state').forEach(s => s.classList.remove('active'));
+                stateEl.classList.add('active');
+
+                // Update Drawer
+                const drawerTitle = document.getElementById('drawerStateTitle');
+                const drawerDesc = document.getElementById('drawerStateDesc');
+                const drawerCount = document.getElementById('drawerHotelCount');
+                const drawerDistCount = document.getElementById('drawerDistrictsCount');
+                const drawerPills = document.getElementById('drawerDistrictPills');
+                const drawerBtn = document.getElementById('drawerExploreBtn');
+
+                if (drawerTitle) drawerTitle.textContent = stateName;
+                if (drawerDesc) drawerDesc.textContent = stateDescriptions[stateName] || ("Explore verified luxury stays across " + stateName + ".");
+                if (drawerCount) drawerCount.textContent = (count || 0) + " Hotels";
+
+                const districts = stateDistricts[stateName] || [];
+                if (drawerDistCount) drawerDistCount.textContent = districts.length + " Districts";
+
+                if (drawerPills) {
+                    drawerPills.innerHTML = '';
+                    districts.forEach(d => {
+                        const pill = document.createElement('a');
+                        pill.className = 'district-btn';
+                        pill.href = '/hotels?state=' + encodeURIComponent(stateName) + '&district=' + encodeURIComponent(d);
+                        pill.textContent = d;
+                        drawerPills.appendChild(pill);
+                    });
+                }
+
+                if (drawerBtn) {
+                    drawerBtn.href = '/hotels?state=' + encodeURIComponent(stateName);
+                    drawerBtn.innerHTML = '<i class="fas fa-search"></i> Explore Hotels in ' + stateName;
+                }
+            });
+        });
+        /*]]>*/
+</body>
+</html>

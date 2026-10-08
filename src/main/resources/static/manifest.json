@@ -1,0 +1,25 @@
+{
+  "name": "Royal Indian Stays",
+  "short_name": "Royal Stays",
+  "description": "Luxury Hotel Dynamic Tariff Optimizer & Guest Preference Matcher across India",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a1128",
+  "theme_color": "#0a1128",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "lifestyle", "luxury"]
+}

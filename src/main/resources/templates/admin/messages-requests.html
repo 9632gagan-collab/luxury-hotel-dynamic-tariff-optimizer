@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Requests | Royal Indian Stays Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Staff Messages &amp; Requests</h1>
+                <p class="page-subtitle">Review operational requests, leave applications, and permissions submitted by personnel</p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.75rem; align-items: center;">
+                <a th:href="@{/admin/notifications}" class="btn-notification-bell" title="Admin Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" th:text="${unreadNotificationCount != null ? unreadNotificationCount : 0}">0</span>
+                </a>
+                <a th:href="@{/admin/messages/new}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-paper-plane"></i> Send Message to Staff
+                </a>
+            </div>
+        </div>
+
+        <!-- Admin Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/admin/dashboard}" class="sub-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/admin/notifications}" class="sub-nav-item"><i class="fas fa-bell"></i> Notifications (<span th:text="${unreadNotificationCount != null ? unreadNotificationCount : 0}">0</span>)</a>
+            <a th:href="@{/admin/messages/inbox}" class="sub-nav-item"><i class="fas fa-envelope"></i> Messages</a>
+            <a th:href="@{/admin/messages/requests}" class="sub-nav-item active"><i class="fas fa-clipboard-list"></i> Staff Requests</a>
+            <a th:href="@{/admin/staff/add}" class="sub-nav-item"><i class="fas fa-user-plus"></i> Add Staff</a>
+            <a th:href="@{/admin/staff}" class="sub-nav-item"><i class="fas fa-users-cog"></i> Staff List</a>
+            <a th:href="@{/admin/guests}" class="sub-nav-item"><i class="fas fa-user-friends"></i> Guest List</a>
+            <a th:href="@{/admin/profile}" class="sub-nav-item"><i class="fas fa-id-card"></i> Admin Profile</a>
+        </nav>
+
+        <!-- Message Sub Tabs -->
+        <div class="msg-tabs-bar">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a th:href="@{/admin/messages/inbox}" class="msg-tab-item">
+                    <i class="fas fa-inbox"></i> Inbox
+                </a>
+                <a th:href="@{/admin/messages/sent}" class="msg-tab-item">
+                    <i class="fas fa-paper-plane"></i> Sent Messages
+                </a>
+                <a th:href="@{/admin/messages/requests}" class="msg-tab-item active">
+                    <i class="fas fa-clipboard-list"></i> Staff Requests
+                </a>
+            </div>
+            <div>
+                <a th:href="@{/admin/messages/new}" class="btn btn-primary btn-sm" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;">
+                    <i class="fas fa-plus"></i> Compose to Staff
+                </a>
+            </div>
+        </div>
+
+        <!-- Flash messages -->
+        <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom: 1.5rem;">
+            <i class="fas fa-check-circle"></i> <span th:text="${successMessage}">Success</span>
+        </div>
+
+        <!-- Requests List Card -->
+        <div class="card" style="padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                <h3 style="font-family: 'Cinzel', serif; font-size: 1.15rem; color: var(--primary-dark); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-clipboard-check" style="color: var(--gold-accent);"></i> Staff Requests &amp; Applications
+                </h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);" th:text="${#lists.size(messages)} + ' request(s)'">0 request(s)</span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(messages)}" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                <i class="fas fa-clipboard-list" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                <h4 style="color: var(--primary-dark); font-size: 1.1rem; margin-bottom: 0.35rem;">No Staff Requests</h4>
+                <p style="font-size: 0.88rem;">There are currently no pending requests submitted by staff members.</p>
+            </div>
+
+            <div th:if="${not #lists.isEmpty(messages)}" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div th:each="m : ${messages}"
+                     class="msg-card-row"
+                     th:classappend="${unreadMessageIds != null and unreadMessageIds.contains(m.id)} ? 'is-unread' : ''"
+                     style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+
+                    <div style="display: flex; align-items: flex-start; gap: 1rem; flex: 1; min-width: 260px;">
+                        <span th:if="${unreadMessageIds != null and unreadMessageIds.contains(m.id)}" class="unread-dot" title="Unread Request"></span>
+                        <span th:if="${unreadMessageIds == null or !unreadMessageIds.contains(m.id)}" class="read-dot" title="Read Request"></span>
+
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.3rem;">
+                                <span class="badge-req-type" th:text="${m.requestType != null ? m.requestType : 'Staff Request'}">Leave Request</span>
+                                <strong style="color: var(--primary-dark); font-size: 0.92rem;">
+                                    <i class="fas fa-user-tie" style="color: var(--info); font-size: 0.85rem;"></i>
+                                    <span th:text="${m.sender != null ? m.sender.username : 'Staff'}">Staff Member</span>
+                                </strong>
+                            </div>
+
+                            <div class="msg-subject-title" th:text="${m.subject}">Leave Application for Next Weekend</div>
+                            <div class="msg-preview-text" th:text="${#strings.abbreviate(m.content, 140)}">Request preview snippet...</div>
+
+                            <div class="msg-meta-text" style="margin-top: 0.4rem;">
+                                <span><i class="far fa-clock"></i> <span th:text="${#temporals.format(m.sentAt, 'dd MMM yyyy, HH:mm')}">01 Oct 2026, 14:30</span></span>
+                                <span th:if="${unreadMessageIds != null and unreadMessageIds.contains(m.id)}" style="color: #0284c7; font-weight: 700; text-transform: uppercase; font-size: 0.72rem;">• UNREAD</span>
+                                <span th:if="${unreadMessageIds == null or !unreadMessageIds.contains(m.id)}" style="color: #64748b; font-size: 0.72rem;">• READ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="flex-shrink: 0; display: flex; gap: 0.5rem; align-items: center;">
+                        <a th:href="@{/admin/messages/{id}(id=${m.id})}" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <span>Review Request</span> <i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

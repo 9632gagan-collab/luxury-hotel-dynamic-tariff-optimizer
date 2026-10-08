@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore by District | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .district-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.75rem;
+            margin-top: 1.5rem;
+        }
+        .district-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-fast);
+            display: flex;
+            flex-direction: column;
+        }
+        .district-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--gold-accent);
+        }
+        .district-header {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #ffffff;
+            padding: 1.5rem;
+            border-bottom: 3px solid var(--gold-accent);
+        }
+        .district-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.35rem;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .district-tagline {
+            font-size: 0.85rem;
+            color: var(--gold-accent);
+            font-weight: 500;
+        }
+        .district-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-grow: 1;
+        }
+        .district-desc {
+            font-size: 0.88rem;
+            color: var(--text-color);
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+        }
+        .district-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.5rem 0;
+        }
+        .district-features li {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .district-features li i {
+            color: var(--gold-accent);
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Explore by District</h1>
+                <p class="page-subtitle">Discover premier Karnataka luxury properties categorized by region</p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.5rem;">
+                <a th:href="@{/guest/dashboard}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </a>
+                <a th:href="@{/hotels}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-th-list"></i> All Karnataka Hotels
+                </a>
+            </div>
+        </div>
+
+        <!-- Guest Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/guest/dashboard}" class="sub-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/guest/my-bookings}" class="sub-nav-item"><i class="fas fa-calendar-check"></i> My Bookings</a>
+            <a th:href="@{/guest/booking-history}" class="sub-nav-item"><i class="fas fa-history"></i> Booking History</a>
+            <a th:href="@{/guest/planned-list}" class="sub-nav-item"><i class="fas fa-bookmark"></i> Planned List</a>
+            <a th:href="@{/guest/recommendations}" class="sub-nav-item"><i class="fas fa-gem"></i> Recommendations</a>
+            <a th:href="@{/guest/offers}" class="sub-nav-item"><i class="fas fa-tag"></i> Offers</a>
+            <a th:href="@{/guest/services}" class="sub-nav-item"><i class="fas fa-concierge-bell"></i> Services</a>
+            <a th:href="@{/guest/districts}" class="sub-nav-item active"><i class="fas fa-map-marked-alt"></i> Districts</a>
+            <a th:href="@{/guest/profile}" class="sub-nav-item"><i class="fas fa-user-cog"></i> Profile</a>
+        </nav>
+
+        <!-- District Fast-Filter Chips -->
+        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 2rem; background: #ffffff; padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+            <span style="font-weight: 600; font-size: 0.9rem; color: var(--primary-dark); align-self: center;">Quick Filter:</span>
+            <a th:href="@{/hotels(state='Karnataka')}" class="btn btn-outline btn-sm">All Karnataka</a>
+            <a th:href="@{/hotels(state='Karnataka', district='Bengaluru Urban')}" class="btn btn-outline btn-sm">Bengaluru Urban</a>
+            <a th:href="@{/hotels(state='Karnataka', district='Mysuru')}" class="btn btn-outline btn-sm">Mysuru</a>
+            <a th:href="@{/hotels(state='Karnataka', district='Kodagu')}" class="btn btn-outline btn-sm">Kodagu (Coorg)</a>
+            <a th:href="@{/hotels(state='Karnataka', district='Chikkamagaluru')}" class="btn btn-outline btn-sm">Chikkamagaluru</a>
+            <a th:href="@{/hotels(state='Karnataka', district='Vijayanagara')}" class="btn btn-outline btn-sm">Vijayanagara (Hampi)</a>
+        </div>
+
+        <!-- District Cards Grid -->
+        <div class="district-grid">
+            <!-- 1. All Karnataka -->
+            <div class="district-card">
+                <div class="district-header">
+                    <h3 class="district-name"><i class="fas fa-globe-asia" style="color: var(--gold-accent);"></i> All Karnataka</h3>
+                    <div class="district-tagline">11 Verified Luxury Properties</div>
+                </div>
+                <div class="district-body">
+                    <div>
+                        <p class="district-desc">
+                            Browse the complete collection of verified luxury palaces, coffee plantation sanctuaries, and heritage retreats across Karnataka.
+                        </p>
+                        <ul class="district-features">
+                            <li><i class="fas fa-check"></i> City Luxury &amp; Historic Palaces</li>
+                            <li><i class="fas fa-check"></i> Nature &amp; Wildlife Reserves</li>
+                            <li><i class="fas fa-check"></i> UNESCO World Heritage Gateways</li>
+                        </ul>
+                    </div>
+                    <a th:href="@{/hotels(state='Karnataka')}" class="btn btn-primary" style="width: 100%; text-align: center;">View All Karnataka Hotels</a>
+                </div>
+            </div>
+
+            <!-- 2. Bengaluru Urban -->
+            <div class="district-card">
+                <div class="district-header">
+                    <h3 class="district-name"><i class="fas fa-city" style="color: var(--gold-accent);"></i> Bengaluru Urban</h3>
+                    <div class="district-tagline">4 Five-Star City Palaces</div>
+                </div>
+                <div class="district-body">
+                    <div>
+                        <p class="district-desc">
+                            Karnataka's vibrant capital featuring regal palace architecture, century-old gardens, and premier corporate conference venues.
+                        </p>
+                        <ul class="district-features">
+                            <li><i class="fas fa-check"></i> The Leela Palace Bengaluru</li>
+                            <li><i class="fas fa-check"></i> Taj West End Bengaluru</li>
+                            <li><i class="fas fa-check"></i> ITC Windsor Bengaluru</li>
+                            <li><i class="fas fa-check"></i> JW Marriott Hotel Bengaluru</li>
+                        </ul>
+                    </div>
+                    <a th:href="@{/hotels(state='Karnataka', district='Bengaluru Urban')}" class="btn btn-primary" style="width: 100%; text-align: center;">Explore Bengaluru Hotels</a>
+                </div>
+            </div>
+
+            <!-- 3. Mysuru -->
+            <div class="district-card">
+                <div class="district-header">
+                    <h3 class="district-name"><i class="fas fa-crown" style="color: var(--gold-accent);"></i> Mysuru</h3>
+                    <div class="district-tagline">3 Regal &amp; Wildlife Properties</div>
+                </div>
+                <div class="district-body">
+                    <div>
+                        <p class="district-desc">
+                            The cultural capital of Karnataka and gateway to Kabini wildlife sanctuary, famous for silk, sandalwood, and royal heritage.
+                        </p>
+                        <ul class="district-features">
+                            <li><i class="fas fa-check"></i> Lalitha Mahal Palace Hotel</li>
+                            <li><i class="fas fa-check"></i> Radisson Blu Plaza Hotel Mysore</li>
+                            <li><i class="fas fa-check"></i> The Serai Kabini (Nagarhole Reserve)</li>
+                        </ul>
+                    </div>
+                    <a th:href="@{/hotels(state='Karnataka', district='Mysuru')}" class="btn btn-primary" style="width: 100%; text-align: center;">Explore Mysuru Hotels</a>
+                </div>
+            </div>
+
+            <!-- 4. Kodagu -->
+            <div class="district-card">
+                <div class="district-header">
+                    <h3 class="district-name"><i class="fas fa-mountain" style="color: var(--gold-accent);"></i> Kodagu</h3>
+                    <div class="district-tagline">2 Mountain Coffee Sanctuaries</div>
+                </div>
+                <div class="district-body">
+                    <div>
+                        <p class="district-desc">
+                            Known as the Scotland of India, nestled in the Western Ghats with misty coffee plantations, spice gardens, and tranquil eco-retreats.
+                        </p>
+                        <ul class="district-features">
+                            <li><i class="fas fa-check"></i> Evolve Back Coorg (Chikkana Halli Estate)</li>
+                            <li><i class="fas fa-check"></i> The Tamara Coorg (Yavakapadi Village)</li>
+                            <li><i class="fas fa-check"></i> Plantation walks &amp; private plunge pools</li>
+                        </ul>
+                    </div>
+                    <a th:href="@{/hotels(state='Karnataka', district='Kodagu')}" class="btn btn-primary" style="width: 100%; text-align: center;">Explore Kodagu Hotels</a>
+                </div>
+            </div>
+
+            <!-- 5. Chikkamagaluru -->
+            <div class="district-card">
+                <div class="district-header">
+                    <h3 class="district-name"><i class="fas fa-coffee" style="color: var(--gold-accent);"></i> Chikkamagaluru</h3>
+                    <div class="district-tagline">1 Coffee Estate Sanctuary</div>
+                </div>
+                <div class="district-body">
+                    <div>
+                        <p class="district-desc">
+                            The birthplace of Indian coffee against the dramatic backdrop of the Mullayanagiri peak, surrounded by lush green valleys.
+                        </p>
+                        <ul class="district-features">
+                            <li><i class="fas fa-check"></i> The Serai Chikmagalur (Mugthihalli)</li>
+                            <li><i class="fas fa-check"></i> Private villa jacuzzis &amp; bean-to-cup journeys</li>
+                            <li><i class="fas fa-check"></i> Western Ghats mountain air &amp; biodiversity</li>
+                        </ul>
+                    </div>
+                    <a th:href="@{/hotels(state='Karnataka', district='Chikkamagaluru')}" class="btn btn-primary" style="width: 100%; text-align: center;">Explore Chikkamagaluru Hotels</a>
+                </div>
+            </div>
+
+            <!-- 6. Vijayanagara -->
+            <div class="district-card">
+                <div class="district-header">
+                    <h3 class="district-name"><i class="fas fa-landmark" style="color: var(--gold-accent);"></i> Vijayanagara</h3>
+                    <div class="district-tagline">1 Palace Palace Retreat (Hampi)</div>
+                </div>
+                <div class="district-body">
+                    <div>
+                        <p class="district-desc">
+                            A legendary UNESCO World Heritage destination showcasing the monumental ruins and 14th-century Vijayanagara Empire glory.
+                        </p>
+                        <ul class="district-features">
+                            <li><i class="fas fa-check"></i> Evolve Back Kamalapura Palace Hampi</li>
+                            <li><i class="fas fa-check"></i> Indo-Islamic architectural grandeur</li>
+                            <li><i class="fas fa-check"></i> Curated private archaeological trails</li>
+                        </ul>
+                    </div>
+                    <a th:href="@{/hotels(state='Karnataka', district='Vijayanagara')}" class="btn btn-primary" style="width: 100%; text-align: center;">Explore Vijayanagara Hotels</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

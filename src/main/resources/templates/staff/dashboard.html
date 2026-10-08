@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
+    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}"/>
+    <title>Hotel Staff Operations Dashboard | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .staff-metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1.15rem;
+            margin-bottom: 2rem;
+        }
+
+        .staff-metric-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem 1.15rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            position: relative;
+        }
+
+        .staff-metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--gold-accent);
+        }
+
+        .staff-metric-card.active-card {
+            border-color: var(--gold-accent);
+            background: #fffdfa;
+            box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.35);
+        }
+
+        .staff-metric-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .flow-metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .flow-metric-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1rem 1.15rem;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .flow-metric-card:hover {
+            border-color: var(--gold-accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .flow-metric-card.active-card {
+            border-color: var(--gold-accent);
+            background: #fffdfa;
+            box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.35);
+        }
+
+        .drilldown-panel {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .drilldown-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .drilldown-table th {
+            background: #f8fafc;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 700;
+            color: var(--primary-dark);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .drilldown-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .drilldown-table tr:hover td {
+            background: #f1f5f9;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            max-width: 680px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.2s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.97); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .live-pulse-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.74rem;
+            color: #10b981;
+            font-weight: 700;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 0 rgba(16, 185, 129, 0.6);
+            animation: pulseAnim 1.8s infinite;
+        }
+
+        @keyframes pulseAnim {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <!-- Page Header -->
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 class="page-title">Hotel Staff Operations Dashboard</h1>
+                <p class="page-subtitle">
+                    Welcome, <strong style="color: var(--gold-accent);" th:text="${staffName}">Staff Member</strong> &bull; Live Guest &amp; Room Operations Command Center
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                <span class="live-pulse-indicator">
+                    <span class="pulse-dot"></span> Live Sync Active
+                </span>
+                <a th:href="@{/staff/notifications}" class="btn-notification-bell" id="staffHeaderNotificationBell" title="Staff Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" th:text="${unreadNotificationCount != null ? unreadNotificationCount : 0}">0</span>
+                </a>
+                <a th:href="@{/staff/messages/inbox}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-envelope"></i> Messages &amp; Requests
+                </a>
+                <a th:href="@{/staff/check-rooms}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-door-open"></i> Check Rooms
+                </a>
+                <a th:href="@{/staff/messages/new}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-paper-plane"></i> Send Request to Admin
+                </a>
+            </div>
+        </div>
+
+        <!-- Alert messages -->
+        <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom: 1.5rem;" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" style="margin-bottom: 1.5rem;" th:text="${errorMessage}"></div>
+
+        <!-- SECTION 1: PERCENTAGE-FIRST OPERATIONAL ROOM METRICS (LEVEL 1) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+            <h2 class="brand-font" style="font-size: 1.25rem; color: var(--primary-dark); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-chart-pie" style="color: var(--gold-accent);"></i> Room Status Distribution
+            </h2>
+            <small style="color: var(--text-muted); font-size: 0.78rem;">Click a card to filter guest &amp; room records</small>
+        </div>
+
+        <section class="staff-metric-grid">
+            <!-- Occupancy -->
+            <div class="staff-metric-card" id="cardOccupancy" onclick="loadDrilldown('OCCUPANCY', this)" style="border-left: 4px solid var(--info);">
+                <div class="staff-metric-icon" style="background: #e0f2fe; color: #0284c7;">
+                    <i class="fas fa-key"></i>
+                </div>
+                <div>
+                    <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Occupied Rooms</span>
+                    <div style="font-size: 1.65rem; font-weight: 700; color: #0284c7; font-family: 'Cinzel', serif;" id="metricOccupancyPct" th:text="${ops.occupancyPct} + '%'">0%</div>
+                    <small style="color: var(--text-muted); font-size: 0.74rem;"><span id="metricOccupiedCount" th:text="${ops.occupiedCount}">0</span> occupied rooms</small>
+                </div>
+            </div>
+
+            <!-- Available Rooms -->
+            <div class="staff-metric-card" id="cardAvailable" onclick="loadDrilldown('AVAILABLE', this)" style="border-left: 4px solid var(--success);">
+                <div class="staff-metric-icon" style="background: #ecfdf5; color: #059669;">
+                    <i class="fas fa-door-closed"></i>
+                </div>
+                <div>
+                    <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Available Rooms</span>
+                    <div style="font-size: 1.65rem; font-weight: 700; color: #059669; font-family: 'Cinzel', serif;" id="metricAvailablePct" th:text="${ops.availablePct} + '%'">0%</div>
+                    <small style="color: var(--text-muted); font-size: 0.74rem;"><span id="metricAvailableCount" th:text="${ops.availableCount}">0</span> ready for assignment</small>
+                </div>
+            </div>
+
+            <!-- Reserved Rooms -->
+            <div class="staff-metric-card" id="cardReserved" onclick="loadDrilldown('RESERVED', this)" style="border-left: 4px solid #f59e0b;">
+                <div class="staff-metric-icon" style="background: #fef3c7; color: #d97706;">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div>
+                    <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Reserved Rooms</span>
+                    <div style="font-size: 1.65rem; font-weight: 700; color: #d97706; font-family: 'Cinzel', serif;" id="metricReservedPct" th:text="${ops.reservedPct} + '%'">0%</div>
+                    <small style="color: var(--text-muted); font-size: 0.74rem;"><span id="metricReservedCount" th:text="${ops.reservedCount}">0</span> confirmed bookings</small>
+                </div>
+            </div>
+
+            <!-- Pre-booked Rooms -->
+            <div class="staff-metric-card" id="cardPrebooked" onclick="loadDrilldown('PREBOOKED', this)" style="border-left: 4px solid #a855f7;">
+                <div class="staff-metric-icon" style="background: #f3e8ff; color: #9333ea;">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Pre-booked Rooms</span>
+                    <div style="font-size: 1.65rem; font-weight: 700; color: #9333ea; font-family: 'Cinzel', serif;" id="metricPrebookedPct" th:text="${ops.prebookedPct} + '%'">0%</div>
+                    <small style="color: var(--text-muted); font-size: 0.74rem;"><span id="metricPrebookedCount" th:text="${ops.prebookedCount}">0</span> pending confirmation</small>
+                </div>
+            </div>
+
+            <!-- Maintenance -->
+            <div class="staff-metric-card" id="cardMaintenance" onclick="loadDrilldown('MAINTENANCE', this)" style="border-left: 4px solid var(--danger);">
+                <div class="staff-metric-icon" style="background: #fee2e2; color: #dc2626;">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div>
+                    <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Under Maintenance</span>
+                    <div style="font-size: 1.65rem; font-weight: 700; color: #dc2626; font-family: 'Cinzel', serif;" id="metricMaintenancePct" th:text="${ops.maintenancePct} + '%'">0%</div>
+                    <small style="color: var(--text-muted); font-size: 0.74rem;"><span id="metricMaintenanceCount" th:text="${ops.maintenanceCount}">0</span> rooms under repair</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: LIVE GUEST FLOW & ACTIVITY (LEVEL 1) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+            <div>
+                <h2 class="brand-font" style="font-size: 1.25rem; color: var(--primary-dark); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-users" style="color: #0284c7;"></i> Today's Hotel Bookings &amp; Reception Operations
+                </h2>
+                <small style="color: var(--text-muted); font-size: 0.75rem;">Recent Operational Activity &bull; In-House Guests &amp; Front Desk Schedules</small>
+            </div>
+            <small style="color: var(--text-muted); font-size: 0.78rem;">Click a status card to inspect guests &amp; bookings</small>
+        </div>
+
+        <section class="flow-metric-grid">
+            <!-- Current Guests -->
+            <div class="flow-metric-card" id="cardCurrentGuests" onclick="loadDrilldown('CURRENT_GUESTS', this)">
+                <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Current Guests</span>
+                <div style="font-size: 1.45rem; font-weight: 700; color: #0284c7; margin: 0.25rem 0;" id="metricCurrentGuests" th:text="${ops.currentGuests}">0</div>
+                <small style="font-size: 0.72rem; color: var(--text-muted);">Residing in-house today</small>
+            </div>
+
+            <!-- Today's Arrivals -->
+            <div class="flow-metric-card" id="cardTodayArrivals" onclick="loadDrilldown('TODAY_ARRIVALS', this)">
+                <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Upcoming Check-ins</span>
+                <div style="font-size: 1.45rem; font-weight: 700; color: #059669; margin: 0.25rem 0;" id="metricTodayArrivals" th:text="${ops.todayArrivals}">0</div>
+                <small style="font-size: 0.72rem; color: var(--text-muted);">Check-ins scheduled</small>
+            </div>
+
+            <!-- Today's Check-outs -->
+            <div class="flow-metric-card" id="cardTodayDepartures" onclick="loadDrilldown('TODAY_DEPARTURES', this)">
+                <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Upcoming Check-outs</span>
+                <div style="font-size: 1.45rem; font-weight: 700; color: #d97706; margin: 0.25rem 0;" id="metricTodayDepartures" th:text="${ops.todayDepartures}">0</div>
+                <small style="font-size: 0.72rem; color: var(--text-muted);">Departures scheduled</small>
+            </div>
+
+            <!-- Upcoming Guests -->
+            <div class="flow-metric-card" id="cardUpcomingGuests" onclick="loadDrilldown('UPCOMING_GUESTS', this)">
+                <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Upcoming Guests</span>
+                <div style="font-size: 1.45rem; font-weight: 700; color: #9333ea; margin: 0.25rem 0;" id="metricUpcomingGuests" th:text="${ops.upcomingGuests}">0</div>
+                <small style="font-size: 0.72rem; color: var(--text-muted);">Future bookings</small>
+            </div>
+
+            <!-- Guest Requests -->
+            <div class="flow-metric-card" id="cardGuestRequests" onclick="loadDrilldown('GUEST_REQUESTS', this)">
+                <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Active Guest Requests</span>
+                <div style="font-size: 1.45rem; font-weight: 700; color: var(--gold-accent); margin: 0.25rem 0;" id="metricGuestRequests" th:text="${ops.guestRequestsCount}">0</div>
+                <small style="font-size: 0.72rem; color: var(--text-muted);">Special preferences</small>
+            </div>
+
+            <!-- Completed Stays -->
+            <div class="flow-metric-card" id="cardCompletedStays" onclick="loadDrilldown('COMPLETED', this)">
+                <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Completed Stays</span>
+                <div style="font-size: 1.45rem; font-weight: 700; color: #475569; margin: 0.25rem 0;" id="metricCompletedStays" th:text="${ops.completedStays}">0</div>
+                <small style="font-size: 0.72rem; color: var(--text-muted);">Checked-out stays</small>
+            </div>
+        </section>
+
+        <!-- SECTION 3: DETAIL-ON-CLICK OPERATIONAL DRILLDOWN (LEVEL 2) -->
+        <section class="drilldown-panel" id="detailsSection">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                <div>
+                    <h3 class="brand-font" id="drilldownTitle" style="margin: 0; font-size: 1.2rem; color: var(--primary-dark);">
+                        Operational Record Drilldown
+                    </h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.25rem 0 0;" id="drilldownSubtitle">
+                        Click any percentage card or operational status above to reveal live guest records.
+                    </p>
+                </div>
+                <div id="drilldownCountBadge">
+                    <span class="badge" style="background: #f1f5f9; color: var(--primary-dark); font-weight: 700; font-size: 0.78rem;">Select Metric</span>
+                </div>
+            </div>
+
+            <div id="drilldownContent">
+                <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                    <i class="fas fa-hand-pointer" style="font-size: 2.25rem; color: var(--gold-accent); margin-bottom: 0.75rem;"></i>
+                    <p style="font-size: 0.95rem; font-weight: 600; color: var(--primary-dark); margin: 0;">Click any operational card above</p>
+                    <p style="font-size: 0.82rem; margin: 0.35rem 0 0;">Inspect live in-house guest details, room assignments, arrivals, and reservation metadata.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- SECTION 4: GUEST & BOOKING DETAIL MODAL (LEVEL 3) -->
+    <div id="guestModal" class="modal-overlay" onclick="closeGuestModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="brand-font" id="modalGuestTitle" style="margin: 0; font-size: 1.25rem; color: var(--primary-dark);">Guest &amp; Stay Record</h3>
+                <button type="button" onclick="closeGuestModalDirect()" style="background: none; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer;">&times;</button>
+            </div>
+            <div id="modalGuestBody" style="padding: 1.5rem;">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        let currentActiveCategory = null;
+
+        // Level 2 Drilldown fetch
+        async function loadDrilldown(category, cardEl) {
+            currentActiveCategory = category;
+
+            // Highlight selected card
+            document.querySelectorAll('.staff-metric-card, .flow-metric-card').forEach(c => c.classList.remove('active-card'));
+            if (cardEl) cardEl.classList.add('active-card');
+
+            const titleEl = document.getElementById('drilldownTitle');
+            const subEl = document.getElementById('drilldownSubtitle');
+            const badgeEl = document.getElementById('drilldownCountBadge');
+            const contentEl = document.getElementById('drilldownContent');
+
+            contentEl.innerHTML = '<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--gold-accent);"></i><p style="margin-top: 0.5rem;">Fetching live database records...</p></div>';
+
+            try {
+                const res = await fetch('/staff/api/operations/drilldown?category=' + encodeURIComponent(category));
+                const items = await res.json();
+
+                titleEl.textContent = formatCategoryTitle(category);
+                subEl.textContent = 'Showing ' + items.length + ' real-time operational records matching ' + category.toLowerCase().replace(/_/g, ' ') + '.';
+                badgeEl.innerHTML = '<span class="badge" style="background: #e0f2fe; color: #0284c7; font-weight: 700; font-size: 0.8rem;">' + items.length + ' Records</span>';
+
+                if (items.length === 0) {
+                    contentEl.innerHTML = `
+                        <div style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                            <i class="fas fa-clipboard-check" style="font-size: 2rem; color: #94a3b8; margin-bottom: 0.5rem;"></i>
+                            <p style="margin: 0; font-weight: 600;">No records found for ${formatCategoryTitle(category)}</p>
+                            <p style="font-size: 0.78rem; margin-top: 0.25rem;">Live database returned 0 matching items.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let rowsHtml = '';
+                items.forEach((item, index) => {
+                    const isRoom = item.type === 'ROOM';
+                    const actionBtn = isRoom
+                        ? `<button type="button" class="btn btn-outline btn-sm" onclick="openRoomDetailModal(${item.id})"><i class="fas fa-door-open"></i> Room Spec</button>`
+                        : `<button type="button" class="btn btn-primary btn-sm" onclick="openBookingGuestModal(${item.id})"><i class="fas fa-user"></i> Guest Record</button>`;
+
+                    rowsHtml += `
+                        <tr>
+                            <td style="font-weight: 700; color: var(--primary-dark);">${item.reference}</td>
+                            <td>
+                                <div style="font-weight: 600;">${item.guestName}</div>
+                                ${item.guestPhone ? `<small style="color: var(--text-muted);">${item.guestPhone}</small>` : ''}
+                            </td>
+                            <td>
+                                <div>${item.hotelName}</div>
+                                <small style="color: var(--text-muted);">${item.category} &bull; Room ${item.roomNumber}</small>
+                            </td>
+                            <td>
+                                <div><small>In: <strong>${item.checkIn}</strong></small></div>
+                                <div><small>Out: <strong>${item.checkOut}</strong></small></div>
+                            </td>
+                            <td>
+                                <span class="badge" style="background: #f1f5f9; color: var(--primary-dark); font-weight: 600;">${item.statusDisplay || item.status}</span>
+                            </td>
+                            <td>
+                                <span style="font-size: 0.78rem; color: #64748b;">${item.operationalNote || '-'}</span>
+                            </td>
+                            <td style="text-align: right;">
+                                ${actionBtn}
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                contentEl.innerHTML = `
+                    <div style="overflow-x: auto;">
+                        <table class="drilldown-table">
+                            <thead>
+                                <tr>
+                                    <th>Reference</th>
+                                    <th>Guest Details</th>
+                                    <th>Property &amp; Room</th>
+                                    <th>Stay Schedule</th>
+                                    <th>Status</th>
+                                    <th>Operations Note</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (err) {
+                contentEl.innerHTML = '<div class="alert alert-danger">Failed to fetch operational records. Please retry.</div>';
+            }
+        }
+
+        // Level 3 Booking / Guest Details Modal
+        async function openBookingGuestModal(bookingId) {
+            const modal = document.getElementById('guestModal');
+            const body = document.getElementById('modalGuestBody');
+            const title = document.getElementById('modalGuestTitle');
+            modal.style.display = 'flex';
+            body.innerHTML = '<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--gold-accent);"></i><p style="margin-top: 0.5rem;">Loading stored guest information...</p></div>';
+
+            try {
+                const res = await fetch('/staff/api/operations/booking/' + bookingId);
+                const g = await res.json();
+
+                title.textContent = 'Guest & Stay Dossier: ' + g.bookingReference;
+
+                let travelersHtml = '';
+                if (g.travelers && g.travelers.length > 0) {
+                    travelersHtml = `
+                        <div style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+                            <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--primary-dark); margin: 0 0 0.5rem;">Individual Travelers Breakdown:</h4>
+                            <table style="width: 100%; font-size: 0.8rem; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f8fafc;">
+                                        <th style="padding: 4px 8px; text-align: left;">Name</th>
+                                        <th style="padding: 4px 8px; text-align: left;">Classification</th>
+                                        <th style="padding: 4px 8px; text-align: left;">Age</th>
+                                        <th style="padding: 4px 8px; text-align: left;">Gender</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${g.travelers.map(t => `
+                                        <tr>
+                                            <td style="padding: 4px 8px; border-top: 1px solid #f1f5f9;">${t.name}</td>
+                                            <td style="padding: 4px 8px; border-top: 1px solid #f1f5f9;">${t.guestType}</td>
+                                            <td style="padding: 4px 8px; border-top: 1px solid #f1f5f9;">${t.age}</td>
+                                            <td style="padding: 4px 8px; border-top: 1px solid #f1f5f9;">${t.gender}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                // Operational action buttons based on status
+                let actionBtns = '';
+                if (g.bookingStatus === 'CONFIRMED' || g.bookingStatus === 'PENDING') {
+                    actionBtns = `<button type="button" class="btn btn-primary btn-sm" onclick="performCheckIn(${g.bookingId})"><i class="fas fa-sign-in-alt"></i> Execute Guest Check-in</button>`;
+                } else if (g.bookingStatus === 'CHECKED_IN') {
+                    actionBtns = `<button type="button" class="btn btn-outline btn-sm" style="border-color: #d97706; color: #d97706;" onclick="performCheckOut(${g.bookingId})"><i class="fas fa-sign-out-alt"></i> Process Guest Check-out</button>`;
+                }
+
+                body.innerHTML = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; font-size: 0.85rem;">
+                        <div>
+                            <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Primary Guest</span>
+                            <div style="font-weight: 700; font-size: 1.05rem; color: var(--primary-dark);">${g.guestName}</div>
+                            <div>Email: ${g.guestEmail}</div>
+                            <div>Phone: ${g.guestPhone}</div>
+                            <div>Type: <span class="badge" style="background: #e0f2fe; color: #0284c7;">${g.guestType}</span></div>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Reservation Specifics</span>
+                            <div>Booking ID: <strong>#${g.bookingId}</strong></div>
+                            <div>Total Tariff: <strong>₹${Number(g.totalAmount).toLocaleString()}</strong></div>
+                            <div>Guests: <strong>${g.numberOfGuests}</strong></div>
+                            <div>Stay Status: <strong style="color: var(--gold-accent);">${g.currentStayStatus}</strong></div>
+                        </div>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; font-size: 0.82rem; margin-bottom: 1rem;">
+                        <div style="font-weight: 700; color: var(--primary-dark); margin-bottom: 0.25rem;">${g.hotelName}</div>
+                        <div style="color: var(--text-muted); margin-bottom: 0.5rem;">${g.address}, ${g.city}, ${g.district}, ${g.state}</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                            <div>Room: <strong>Room ${g.roomNumber}</strong> (${g.roomCategory})</div>
+                            <div>Floor: <strong>${g.floorNumber}</strong> &bull; Room Status: <strong>${g.roomStatus}</strong></div>
+                            <div>Check-In: <strong>${g.checkInDate} (${g.checkInTime})</strong></div>
+                            <div>Check-Out: <strong>${g.checkOutDate} (${g.checkOutTime})</strong></div>
+                        </div>
+                    </div>
+
+                    ${travelersHtml}
+
+                    <div style="margin-top: 1rem; font-size: 0.82rem;">
+                        <span style="font-weight: 700; color: var(--primary-dark);">Special Requests / Concierge Notes:</span>
+                        <div style="background: #fffdfa; border: 1px dashed var(--gold-accent); border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; margin-top: 0.35rem; color: #78350f;">
+                            ${g.specialRequests}
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        ${actionBtns}
+                        <button type="button" class="btn btn-outline btn-sm" onclick="closeGuestModalDirect()">Close</button>
+                    </div>
+                `;
+            } catch (err) {
+                body.innerHTML = '<div class="alert alert-danger">Error retrieving guest record. Please try again.</div>';
+            }
+        }
+
+        // Level 3 Room Detail Modal
+        async function openRoomDetailModal(roomId) {
+            const modal = document.getElementById('guestModal');
+            const body = document.getElementById('modalGuestBody');
+            const title = document.getElementById('modalGuestTitle');
+            modal.style.display = 'flex';
+            body.innerHTML = '<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--gold-accent);"></i><p style="margin-top: 0.5rem;">Loading room metadata...</p></div>';
+
+            try {
+                const res = await fetch('/staff/api/operations/room/' + roomId);
+                const r = await res.json();
+                title.textContent = 'Room Specification: Room ' + r.roomNumber;
+                body.innerHTML = `
+                    <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <img src="${r.imageUrl || '/images/default-room.jpg'}" style="width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius-sm);" alt="Room">
+                        <div style="font-size: 0.85rem;">
+                            <div style="font-weight: 700; font-size: 1.05rem;">Room ${r.roomNumber} - ${r.category}</div>
+                            <div style="color: var(--text-muted);">${r.hotelName} &bull; Floor ${r.floorNumber}</div>
+                            <div style="margin-top: 0.35rem;">Status: <strong class="badge badge-success">${r.statusDisplay}</strong></div>
+                            <div style="margin-top: 0.25rem; font-weight: 700; color: var(--gold-accent);">₹${Number(r.basePrice).toLocaleString()}/night</div>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">${r.description || 'Standard luxury room accommodation.'}</p>
+                    <div style="margin-top: 1.5rem; text-align: right;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="closeGuestModalDirect()">Close</button>
+                    </div>
+                `;
+            } catch (err) {
+                body.innerHTML = '<div class="alert alert-danger">Error retrieving room data.</div>';
+            }
+        }
+
+        // Operational Actions
+        async function performCheckIn(bookingId) {
+            if (!confirm('Confirm guest check-in for this booking? Room status will update to OCCUPIED.')) return;
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+                const res = await fetch('/staff/api/operations/check-in/' + bookingId, {
+                    method: 'POST',
+                    headers: { [csrfHeader]: csrfToken }
+                });
+                const data = await res.json();
+                alert(data.message);
+                closeGuestModalDirect();
+                syncLiveTelemetry();
+                if (currentActiveCategory) {
+                    loadDrilldown(currentActiveCategory, null);
+                }
+            } catch (err) {
+                alert('Error completing check-in.');
+            }
+        }
+
+        async function performCheckOut(bookingId) {
+            if (!confirm('Confirm guest check-out for this booking? Room will be vacated.')) return;
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+                const res = await fetch('/staff/api/operations/check-out/' + bookingId, {
+                    method: 'POST',
+                    headers: { [csrfHeader]: csrfToken }
+                });
+                const data = await res.json();
+                alert(data.message);
+                closeGuestModalDirect();
+                syncLiveTelemetry();
+                if (currentActiveCategory) {
+                    loadDrilldown(currentActiveCategory, null);
+                }
+            } catch (err) {
+                alert('Error completing check-out.');
+            }
+        }
+
+        function closeGuestModal(event) {
+            if (event.target.id === 'guestModal') {
+                document.getElementById('guestModal').style.display = 'none';
+            }
+        }
+
+        function closeGuestModalDirect() {
+            document.getElementById('guestModal').style.display = 'none';
+        }
+
+        function formatCategoryTitle(category) {
+            switch (category) {
+                case 'OCCUPANCY': return 'Occupied Rooms & In-House Stays';
+                case 'AVAILABLE': return 'Available Rooms Ready for Assignment';
+                case 'RESERVED': return 'Confirmed Reservations';
+                case 'PREBOOKED': return 'Pre-booked & Pending Confirmations';
+                case 'MAINTENANCE': return 'Rooms Under Active Maintenance';
+                case 'CURRENT_GUESTS': return 'Current In-House Resident Guests';
+                case 'TODAY_ARRIVALS': return "Today's Scheduled Check-ins & Arrivals";
+                case 'TODAY_DEPARTURES': return "Today's Scheduled Check-outs & Departures";
+                case 'UPCOMING_GUESTS': return 'Upcoming Guests & Future Reservations';
+                case 'GUEST_REQUESTS': return 'Active Guest Concierge & Special Requests';
+                case 'COMPLETED': return 'Completed & Concluded Guest Stays';
+                default: return category;
+            }
+        }
+
+        // Automatic Data Refresh (Live Behavior Requirement 14)
+        async function syncLiveTelemetry() {
+            try {
+                const res = await fetch('/staff/api/operations/summary');
+                if (!res.ok) return;
+                const d = await res.json();
+
+                // Update percentage cards in place without reload
+                if (document.getElementById('metricOccupancyPct')) document.getElementById('metricOccupancyPct').textContent = d.occupancyPct + '%';
+                if (document.getElementById('metricOccupiedCount')) document.getElementById('metricOccupiedCount').textContent = d.occupiedCount;
+
+                if (document.getElementById('metricAvailablePct')) document.getElementById('metricAvailablePct').textContent = d.availablePct + '%';
+                if (document.getElementById('metricAvailableCount')) document.getElementById('metricAvailableCount').textContent = d.availableCount;
+
+                if (document.getElementById('metricReservedPct')) document.getElementById('metricReservedPct').textContent = d.reservedPct + '%';
+                if (document.getElementById('metricReservedCount')) document.getElementById('metricReservedCount').textContent = d.reservedCount;
+
+                if (document.getElementById('metricPrebookedPct')) document.getElementById('metricPrebookedPct').textContent = d.prebookedPct + '%';
+                if (document.getElementById('metricPrebookedCount')) document.getElementById('metricPrebookedCount').textContent = d.prebookedCount;
+
+                if (document.getElementById('metricMaintenancePct')) document.getElementById('metricMaintenancePct').textContent = d.maintenancePct + '%';
+                if (document.getElementById('metricMaintenanceCount')) document.getElementById('metricMaintenanceCount').textContent = d.maintenanceCount;
+
+                if (document.getElementById('metricCurrentGuests')) document.getElementById('metricCurrentGuests').textContent = d.currentGuests;
+                if (document.getElementById('metricTodayArrivals')) document.getElementById('metricTodayArrivals').textContent = d.todayArrivals;
+                if (document.getElementById('metricTodayDepartures')) document.getElementById('metricTodayDepartures').textContent = d.todayDepartures;
+                if (document.getElementById('metricUpcomingGuests')) document.getElementById('metricUpcomingGuests').textContent = d.upcomingGuests;
+                if (document.getElementById('metricGuestRequests')) document.getElementById('metricGuestRequests').textContent = d.guestRequestsCount;
+                if (document.getElementById('metricCompletedStays')) document.getElementById('metricCompletedStays').textContent = d.completedStays;
+            } catch (err) {
+                // Silently skip if network blips during polling
+            }
+        }
+
+        // Lightweight live polling every 8 seconds
+        setInterval(syncLiveTelemetry, 8000);
+        /*]]>*/
+    </script>
+
+</body>
+</html>

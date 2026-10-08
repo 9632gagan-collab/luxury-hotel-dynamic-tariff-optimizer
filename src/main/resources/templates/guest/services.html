@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Services &amp; Amenities | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.75rem;
+            margin-top: 1.5rem;
+        }
+        .service-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-fast);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .service-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--gold-accent);
+        }
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(200, 155, 60, 0.12);
+            color: var(--gold-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 1.25rem;
+        }
+        .service-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+        .service-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        .service-meta {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            font-size: 0.82rem;
+            color: var(--text-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Curated Hotel Services</h1>
+                <p class="page-subtitle">Signature amenities, personalized wellness, and round-the-clock bespoke hospitality</p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.5rem;">
+                <a th:href="@{/guest/dashboard}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </a>
+                <a th:href="@{/hotels}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-hotel"></i> Explore Hotels
+                </a>
+            </div>
+        </div>
+
+        <!-- Guest Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/guest/dashboard}" class="sub-nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a th:href="@{/guest/my-bookings}" class="sub-nav-item"><i class="fas fa-calendar-check"></i> My Bookings</a>
+            <a th:href="@{/guest/booking-history}" class="sub-nav-item"><i class="fas fa-history"></i> Booking History</a>
+            <a th:href="@{/guest/recommendations}" class="sub-nav-item"><i class="fas fa-gem"></i> Recommendations</a>
+            <a th:href="@{/guest/offers}" class="sub-nav-item"><i class="fas fa-tag"></i> Offers</a>
+            <a th:href="@{/guest/services}" class="sub-nav-item active"><i class="fas fa-concierge-bell"></i> Services</a>
+            <a th:href="@{/guest/districts}" class="sub-nav-item"><i class="fas fa-map-marked-alt"></i> Districts</a>
+            <a th:href="@{/guest/profile}" class="sub-nav-item"><i class="fas fa-user-cog"></i> Profile</a>
+        </nav>
+
+        <!-- Services Grid -->
+        <div class="services-grid">
+            <!-- 1. Fine Dining -->
+            <div class="service-card">
+                <div>
+                    <div class="service-icon"><i class="fas fa-utensils"></i></div>
+                    <h3 class="service-title">24/7 Fine Dining &amp; Private Chef</h3>
+                    <p class="service-desc">
+                        Multi-cuisine gastronomy, authentic South Indian delicacies, and bespoke private dining curated by executive master chefs.
+                    </p>
+                </div>
+                <div class="service-meta">
+                    <span><i class="fas fa-clock" style="color: var(--gold-accent);"></i> Available 24 Hours</span>
+                    <span class="badge badge-success">Included / On-Demand</span>
+                </div>
+            </div>
+
+            <!-- 2. Wellness Spa -->
+            <div class="service-card">
+                <div>
+                    <div class="service-icon"><i class="fas fa-spa"></i></div>
+                    <h3 class="service-title">Azure Wellness Spa &amp; Ayurveda</h3>
+                    <p class="service-desc">
+                        Holistic treatments, deep tissue therapeutic massages, herbal steam rooms, and ancient Ayurvedic wellness therapies.
+                    </p>
+                </div>
+                <div class="service-meta">
+                    <span><i class="fas fa-clock" style="color: var(--gold-accent);"></i> 07:00 AM – 10:00 PM</span>
+                    <span class="badge badge-info">Prior Booking</span>
+                </div>
+            </div>
+
+            <!-- 3. Chauffeur -->
+            <div class="service-card">
+                <div>
+                    <div class="service-icon"><i class="fas fa-car-side"></i></div>
+                    <h3 class="service-title">Luxury Mercedes Airport Chauffeur</h3>
+                    <p class="service-desc">
+                        Seamless premium airport transfers to Kempegowda International Airport and private Karnataka intercity luxury tours.
+                    </p>
+                </div>
+                <div class="service-meta">
+                    <span><i class="fas fa-clock" style="color: var(--gold-accent);"></i> 24/7 On Request</span>
+                    <span class="badge badge-warning">Concierge Arranged</span>
+                </div>
+            </div>
+
+            <!-- 4. Butler Service -->
+            <div class="service-card">
+                <div>
+                    <div class="service-icon"><i class="fas fa-user-tie"></i></div>
+                    <h3 class="service-title">Dedicated Suite Butler</h3>
+                    <p class="service-desc">
+                        Unpacking and packing assistance, wardrobe steaming, personalized itinerary curation, and in-suite dining presentations.
+                    </p>
+                </div>
+                <div class="service-meta">
+                    <span><i class="fas fa-clock" style="color: var(--gold-accent);"></i> 24/7 Dedicated</span>
+                    <span class="badge badge-success">Select Suites</span>
+                </div>
+            </div>
+
+            <!-- 5. Guided Excursions -->
+            <div class="service-card">
+                <div>
+                    <div class="service-icon"><i class="fas fa-compass"></i></div>
+                    <h3 class="service-title">Heritage &amp; Wildlife Safaris</h3>
+                    <p class="service-desc">
+                        Naturalist-led Nagarhole / Kabini boat safaris, Hampi monument architectural walks, and Kodagu private coffee plantation trails.
+                    </p>
+                </div>
+                <div class="service-meta">
+                    <span><i class="fas fa-clock" style="color: var(--gold-accent);"></i> Morning &amp; Evening Slots</span>
+                    <span class="badge badge-info">Guided Experience</span>
+                </div>
+            </div>
+
+            <!-- 6. Business & Conference -->
+            <div class="service-card">
+                <div>
+                    <div class="service-icon"><i class="fas fa-briefcase"></i></div>
+                    <h3 class="service-title">Executive Boardrooms &amp; Banquets</h3>
+                    <p class="service-desc">
+                        State-of-the-art hybrid meeting suites, high-speed encrypted connectivity, and majestic banquet lawns for regal galas.
+                    </p>
+                </div>
+                <div class="service-meta">
+                    <span><i class="fas fa-clock" style="color: var(--gold-accent);"></i> Flexible Hours</span>
+                    <span class="badge badge-primary">Corporate Privileges</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

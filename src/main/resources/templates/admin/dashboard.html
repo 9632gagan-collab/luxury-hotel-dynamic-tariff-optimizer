@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Operations Control Center | Royal Indian Stays</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .control-center-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+        .ops-section-card {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .section-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+        .section-title {
+            font-size: 1.12rem;
+            font-family: 'Cinzel', serif;
+            color: var(--primary-dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 1rem;
+        }
+        .kpi-chip {
+            background: rgba(10, 17, 40, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1.1rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-chip:hover {
+            transform: translateY(-2px);
+            border-color: var(--gold-accent);
+            box-shadow: var(--shadow-sm);
+        }
+        .kpi-chip.active {
+            border: 2px solid var(--gold-accent);
+            background: rgba(197, 160, 89, 0.06);
+        }
+        .kpi-chip::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gold-accent);
+        }
+        .kpi-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .kpi-value {
+            font-size: 1.85rem;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            color: var(--primary-dark);
+            line-height: 1;
+        }
+        .kpi-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+        }
+
+        /* Level 2 & 3 Interactive Expandable Drawer */
+        .drilldown-container {
+            display: none;
+            margin-top: 1.25rem;
+            background: #ffffff;
+            border: 1px solid var(--gold-accent);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-md);
+            animation: fadeIn 0.2s ease-in-out;
+        }
+        .drilldown-container.open {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .drilldown-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .drilldown-table th {
+            background: rgba(10, 17, 40, 0.04);
+            text-align: left;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .drilldown-table td {
+            padding: 0.75rem 0.85rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .drilldown-table tr:hover {
+            background: rgba(197, 160, 89, 0.04);
+            cursor: pointer;
+        }
+
+        /* Generic modal for Level 3 full item details */
+        .level3-modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 17, 40, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 2100;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .level3-modal-backdrop.open {
+            display: flex;
+        }
+        .level3-modal-card {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+            <div>
+                <h1 class="page-title">Executive Administration Dashboard &bull; Hotel Operations Control Center</h1>
+                <p class="page-subtitle">
+                    Authorized Administrator: <strong style="color: var(--gold-accent);" th:text="${adminUsername}">ADMIN</strong> | Operational status, room availability, quality audits &amp; staffing
+                </p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.75rem; align-items: center;">
+                <a th:href="@{/admin/notifications}" class="btn-notification-bell" id="adminHeaderNotificationBell" title="Admin Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" th:text="${unreadNotificationCount != null ? unreadNotificationCount : 0}">0</span>
+                </a>
+                <a th:href="@{/admin/messages/new}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-paper-plane"></i> Send Message
+                </a>
+                <a th:href="@{/admin/staff/add}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-user-plus"></i> Add Staff
+                </a>
+            </div>
+        </div>
+
+        <!-- Preserved Admin Sub Navigation (Requirement 9) -->
+        <nav class="sub-navbar" style="margin-bottom: 2rem;">
+            <a th:href="@{/admin/dashboard}" class="sub-nav-item active"><i class="fas fa-th-large"></i> Control Center</a>
+            <a th:href="@{/admin/notifications}" class="sub-nav-item"><i class="fas fa-bell"></i> Notifications (<span th:text="${unreadNotificationCount != null ? unreadNotificationCount : 0}">0</span>)</a>
+            <a th:href="@{/admin/messages/inbox}" class="sub-nav-item"><i class="fas fa-envelope"></i> Messages</a>
+            <a th:href="@{/admin/messages/requests}" class="sub-nav-item"><i class="fas fa-clipboard-list"></i> Staff Messages / Requests</a>
+            <a th:href="@{/admin/staff}" class="sub-nav-item"><i class="fas fa-users-cog"></i> Staff List</a>
+            <a th:href="@{/admin/guests}" class="sub-nav-item"><i class="fas fa-user-friends"></i> Guest List</a>
+            <a th:href="@{/admin/profile}" class="sub-nav-item"><i class="fas fa-id-card"></i> Profile</a>
+        </nav>
+
+        <div class="control-center-sections">
+
+            <!-- SECTION A: GUEST DETAILS (Requirement 6A) -->
+            <div class="ops-section-card">
+                <div class="section-header-row">
+                    <h3 class="section-title">
+                        <i class="fas fa-user-check" style="color: var(--gold-accent);"></i>
+                        A. Guest Activity Operations
+                    </h3>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Click status to inspect guest lists</span>
+                </div>
+
+                <div class="kpi-row">
+                    <div class="kpi-chip" onclick="showGuestDrilldown('CURRENT', this)">
+                        <div class="kpi-label">Current Guests <i class="fas fa-house-user" style="color: var(--success);"></i></div>
+                        <div class="kpi-value" th:text="${guestActivity.currentGuestsPct + '%'}">28%</div>
+                        <div class="kpi-sub" th:text="${guestActivity.currentGuestsCount + ' active stays'}">4 active stays</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showGuestDrilldown('UPCOMING', this)">
+                        <div class="kpi-label">Upcoming Guests <i class="fas fa-calendar-alt" style="color: var(--info);"></i></div>
+                        <div class="kpi-value" th:text="${guestActivity.upcomingGuestsPct + '%'}">44%</div>
+                        <div class="kpi-sub" th:text="${guestActivity.upcomingGuestsCount + ' reservations'}">7 reservations</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showGuestDrilldown('COMPLETED', this)">
+                        <div class="kpi-label">Completed Stays <i class="fas fa-check-double" style="color: var(--warning);"></i></div>
+                        <div class="kpi-value" th:text="${guestActivity.completedStaysPct + '%'}">22%</div>
+                        <div class="kpi-sub" th:text="${guestActivity.completedStaysCount + ' checked out'}">3 checked out</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showGuestDrilldown('PENDING', this)">
+                        <div class="kpi-label">Pending Confirmations <i class="fas fa-hourglass-half" style="color: #8b5cf6;"></i></div>
+                        <div class="kpi-value" th:text="${guestActivity.pendingPct + '%'}">6%</div>
+                        <div class="kpi-sub" th:text="${guestActivity.pendingCount + ' holds'}">1 hold</div>
+                    </div>
+                </div>
+
+                <!-- Level 2 Guest Drilldown Container -->
+                <div class="drilldown-container" id="guestDrilldown">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <strong id="guestDrillTitle" style="color: var(--primary-dark); font-size: 0.95rem;">Guest Details</strong>
+                        <span id="guestDrillCount" class="badge badge-success">Records</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="drilldown-table">
+                            <thead>
+                                <tr>
+                                    <th>Booking Ref</th>
+                                    <th>Guest Full Name</th>
+                                    <th>Property</th>
+                                    <th>Dates</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="guestDrillTbody">
+                                <tr><td colspan="6" style="text-align: center;">Click a percentage above to load records.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION B: CHECK HOTELS OVERVIEW (Requirement 6B) -->
+            <div class="ops-section-card">
+                <div class="section-header-row">
+                    <h3 class="section-title">
+                        <i class="fas fa-hotel" style="color: var(--gold-accent);"></i>
+                        B. Hotel Room Operational Status
+                    </h3>
+                    <a th:href="@{/admin/check-hotels}" class="btn btn-outline btn-sm" style="font-size: 0.78rem;">Full Inventory Overview &rarr;</a>
+                </div>
+
+                <div class="kpi-row">
+                    <div class="kpi-chip" onclick="showHotelRoomsDrilldown('AVAILABLE', this)">
+                        <div class="kpi-label">Available <i class="fas fa-door-open" style="color: var(--success);"></i></div>
+                        <div class="kpi-value" th:text="${hotelOperations.availablePct + '%'}">32%</div>
+                        <div class="kpi-sub" th:text="${hotelOperations.availableCount + ' rooms ready'}">14 rooms ready</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showHotelRoomsDrilldown('RESERVED', this)">
+                        <div class="kpi-label">Reserved <i class="fas fa-calendar-check" style="color: var(--warning);"></i></div>
+                        <div class="kpi-value" th:text="${hotelOperations.reservedPct + '%'}">41%</div>
+                        <div class="kpi-sub" th:text="${hotelOperations.reservedCount + ' confirmed'}">18 confirmed</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showHotelRoomsDrilldown('PRE-BOOKED', this)">
+                        <div class="kpi-label">Pre-booked <i class="fas fa-clock" style="color: var(--info);"></i></div>
+                        <div class="kpi-value" th:text="${hotelOperations.prebookedPct + '%'}">17%</div>
+                        <div class="kpi-sub" th:text="${hotelOperations.prebookedCount + ' pending'}">7 pending</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showHotelRoomsDrilldown('UNRESERVED', this)">
+                        <div class="kpi-label">Unreserved <i class="fas fa-key" style="color: #8b5cf6;"></i></div>
+                        <div class="kpi-value" th:text="${hotelOperations.unreservedPct + '%'}">10%</div>
+                        <div class="kpi-sub" th:text="${hotelOperations.unreservedCount + ' unassigned'}">4 unassigned</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showHotelRoomsDrilldown('OCCUPIED', this)">
+                        <div class="kpi-label">Occupied <i class="fas fa-user-tag" style="color: var(--danger);"></i></div>
+                        <div class="kpi-value" th:text="${hotelOperations.occupiedPct + '%'}">12%</div>
+                        <div class="kpi-sub" th:text="${hotelOperations.occupiedCount + ' in stay'}">5 in stay</div>
+                    </div>
+                </div>
+
+                <!-- Level 2 Hotel Rooms Drilldown -->
+                <div class="drilldown-container" id="hotelRoomsDrilldown">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <strong id="hotelRoomsDrillTitle" style="color: var(--primary-dark); font-size: 0.95rem;">Inventory Units</strong>
+                        <span id="hotelRoomsDrillCount" class="badge badge-success">Records</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="drilldown-table">
+                            <thead>
+                                <tr>
+                                    <th>Ref / Unit</th>
+                                    <th>Property Wing</th>
+                                    <th>Room #</th>
+                                    <th>Allocation / Guest</th>
+                                    <th>Details</th>
+                                    <th>Tariff</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hotelRoomsDrillTbody">
+                                <tr><td colspan="7" style="text-align: center;">Click a status card above to inspect units.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION C: MAINTENANCE (Requirement 6C) -->
+            <div class="ops-section-card">
+                <div class="section-header-row">
+                    <h3 class="section-title">
+                        <i class="fas fa-tools" style="color: var(--gold-accent);"></i>
+                        C. Property Maintenance Operations
+                    </h3>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Click percentage to reveal affected hotels</span>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+                    <!-- Level 1: Percentage Card -->
+                    <div class="kpi-chip" style="min-width: 200px;" onclick="toggleMaintenanceHotels(this)">
+                        <div class="kpi-label">Maintenance Rate <i class="fas fa-wrench" style="color: var(--warning);"></i></div>
+                        <div class="kpi-value" th:text="${maintenance.maintenancePct + '%'}">12%</div>
+                        <div class="kpi-sub" th:text="${maintenance.activeCount + ' units under servicing'}">3 units under servicing</div>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; max-width: 480px; line-height: 1.5;">
+                        Real-time status calculated from room maintenance flags and scheduled property servicing logs across verified Indian luxury wings.
+                    </p>
+                </div>
+
+                <!-- Level 2: Affected Hotels List (Revealed on click) -->
+                <div class="drilldown-container" id="maintenanceHotelsList">
+                    <div style="margin-bottom: 0.75rem;">
+                        <strong style="color: var(--primary-dark); font-size: 0.95rem;">Properties with Active Maintenance Operations</strong>
+                        <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0.15rem 0 0;">Click a property name to open complete maintenance records</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+                        <div th:each="h : ${maintenanceHotels}"
+                             th:data-hotel-id="${h.id}"
+                             th:data-hotel-name="${h.name}"
+                             onclick="showHotelMaintenanceModal(this.getAttribute('data-hotel-id'), this.getAttribute('data-hotel-name'))"
+                             style="background: rgba(10, 17, 40, 0.02); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; cursor: pointer; transition: all 0.2s ease;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                <strong style="color: var(--primary-dark); font-size: 0.92rem;" th:text="${h.name}">The Leela Palace</strong>
+                                <span class="badge badge-warning" style="font-size: 0.7rem;">Servicing</span>
+                            </div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted);" th:text="${h.city + ', ' + h.district}">Bengaluru, Bengaluru Urban</div>
+                            <div style="font-size: 0.78rem; color: var(--gold-accent); margin-top: 0.4rem; font-weight: 600;">Click for Work Orders &rarr;</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION D: INSPECTIONS (Requirement 6D) -->
+            <div class="ops-section-card">
+                <div class="section-header-row">
+                    <h3 class="section-title">
+                        <i class="fas fa-clipboard-check" style="color: var(--gold-accent);"></i>
+                        D. Property Inspections &amp; Hygiene Audits
+                    </h3>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Click status to inspect audit entries</span>
+                </div>
+
+                <div class="kpi-row">
+                    <div class="kpi-chip" onclick="showInspectionsDrilldown('COMPLETED', this)">
+                        <div class="kpi-label">Completed <i class="fas fa-check-circle" style="color: var(--success);"></i></div>
+                        <div class="kpi-value" th:text="${inspections.completedPct + '%'}">40%</div>
+                        <div class="kpi-sub" th:text="${inspections.completedCount + ' verified'}">2 verified</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showInspectionsDrilldown('INSPECTED', this)">
+                        <div class="kpi-label">Inspected <i class="fas fa-search" style="color: var(--info);"></i></div>
+                        <div class="kpi-value" th:text="${inspections.inspectedPct + '%'}">30%</div>
+                        <div class="kpi-sub" th:text="${inspections.inspectedCount + ' passed'}">1 passed</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showInspectionsDrilldown('PENDING', this)">
+                        <div class="kpi-label">Pending <i class="fas fa-clock" style="color: var(--warning);"></i></div>
+                        <div class="kpi-value" th:text="${inspections.pendingPct + '%'}">20%</div>
+                        <div class="kpi-sub" th:text="${inspections.pendingCount + ' scheduled'}">1 scheduled</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showInspectionsDrilldown('DUE', this)">
+                        <div class="kpi-label">Due <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i></div>
+                        <div class="kpi-value" th:text="${inspections.duePct + '%'}">10%</div>
+                        <div class="kpi-sub" th:text="${inspections.dueCount + ' upcoming'}">1 upcoming</div>
+                    </div>
+                </div>
+
+                <!-- Level 2 Inspections Drilldown -->
+                <div class="drilldown-container" id="inspectionsDrilldown">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <strong id="inspectionsDrillTitle" style="color: var(--primary-dark); font-size: 0.95rem;">Audit Entries</strong>
+                        <span id="inspectionsDrillCount" class="badge badge-success">Records</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="drilldown-table">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Area / Facility</th>
+                                    <th>Auditor</th>
+                                    <th>Audit Date</th>
+                                    <th>Score</th>
+                                    <th>Status</th>
+                                    <th>Notes</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inspectionsDrillTbody">
+                                <tr><td colspan="8" style="text-align: center;">Click an inspection status above to load audit records.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION E: STAFF ACTIVITY (Requirement 6E) -->
+            <div class="ops-section-card">
+                <div class="section-header-row">
+                    <h3 class="section-title">
+                        <i class="fas fa-users-cog" style="color: var(--gold-accent);"></i>
+                        E. Operational Staff Activity
+                    </h3>
+                    <a th:href="@{/admin/staff}" class="btn btn-outline btn-sm" style="font-size: 0.78rem;">Full Staff Directory &rarr;</a>
+                </div>
+
+                <div class="kpi-row">
+                    <div class="kpi-chip" onclick="showStaffDrilldown('Working', this)">
+                        <div class="kpi-label">Working <i class="fas fa-user-check" style="color: var(--success);"></i></div>
+                        <div class="kpi-value" th:text="${staffActivity.workingPct + '%'}">60%</div>
+                        <div class="kpi-sub" th:text="${staffActivity.workingCount + ' on duty'}">3 on duty</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showStaffDrilldown('Not Working', this)">
+                        <div class="kpi-label">Not Working <i class="fas fa-user-clock" style="color: var(--text-muted);"></i></div>
+                        <div class="kpi-value" th:text="${staffActivity.notWorkingPct + '%'}">20%</div>
+                        <div class="kpi-sub" th:text="${staffActivity.notWorkingCount + ' off shift'}">1 off shift</div>
+                    </div>
+                    <div class="kpi-chip" onclick="showStaffDrilldown('On Leave', this)">
+                        <div class="kpi-label">On Leave <i class="fas fa-plane-departure" style="color: var(--warning);"></i></div>
+                        <div class="kpi-value" th:text="${staffActivity.onLeavePct + '%'}">20%</div>
+                        <div class="kpi-sub" th:text="${staffActivity.onLeaveCount + ' approved'}">1 approved</div>
+                    </div>
+                </div>
+
+                <!-- Level 2 Staff Drilldown -->
+                <div class="drilldown-container" id="staffDrilldown">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <strong id="staffDrillTitle" style="color: var(--primary-dark); font-size: 0.95rem;">Staff Personnel List</strong>
+                        <span id="staffDrillCount" class="badge badge-success">Records</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="drilldown-table">
+                            <thead>
+                                <tr>
+                                    <th>Staff ID</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Designation</th>
+                                    <th>Shift Schedule</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staffDrillTbody">
+                                <tr><td colspan="7" style="text-align: center;">Click an activity status above to inspect staff personnel.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Generic Modal for Level 3 Details (Requirement 7) -->
+    <div class="level3-modal-backdrop" id="level3Modal" onclick="closeLevel3Modal()">
+        <div class="level3-modal-card" onclick="event.stopPropagation()">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="level3Title" style="font-size: 1.15rem; font-family: 'Cinzel', serif; color: var(--primary-dark); margin: 0;">Details</h3>
+                <button type="button" onclick="closeLevel3Modal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            <div style="padding: 1.5rem;" id="level3Body">
+                <p>Loading details...</p>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+    <script>
+        // Section A: Guest details drilldown
+        function showGuestDrilldown(cat, el) {
+            document.querySelectorAll('.kpi-chip').forEach(c => c.classList.remove('active'));
+            if (el) el.classList.add('active');
+            const drawer = document.getElementById('guestDrilldown');
+            drawer.classList.add('open');
+            document.getElementById('guestDrillTitle').innerText = cat + ' Guest Activity';
+
+            fetch('/admin/api/operations/guest-activity?category=' + encodeURIComponent(cat))
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('guestDrillTbody');
+                    tbody.innerHTML = '';
+                    document.getElementById('guestDrillCount').innerText = data.length + ' Records';
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 1.5rem;">No guest records in this state.</td></tr>';
+                        return;
+                    }
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong style="color: var(--primary-dark);">${item.reference}</strong></td>
+                            <td>${item.guestName}</td>
+                            <td>${item.hotelName} (Room ${item.roomNumber})</td>
+                            <td>${item.dates}</td>
+                            <td><span class="badge badge-success">${item.status}</span></td>
+                            <td><button type="button" class="btn btn-outline btn-sm" onclick="openGuestStayModal('${item.reference}', '${item.guestName}', '${item.email || ''}', '${item.hotelName}', '${item.roomNumber}', '${item.dates}', '${item.guests}', '${item.amount}')">View Record</button></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        // Section B: Hotel Rooms drilldown
+        function showHotelRoomsDrilldown(status, el) {
+            document.querySelectorAll('.kpi-chip').forEach(c => c.classList.remove('active'));
+            if (el) el.classList.add('active');
+            const drawer = document.getElementById('hotelRoomsDrilldown');
+            drawer.classList.add('open');
+            document.getElementById('hotelRoomsDrillTitle').innerText = status + ' Rooms & Units';
+
+            fetch('/admin/api/operations/rooms?status=' + encodeURIComponent(status))
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('hotelRoomsDrillTbody');
+                    tbody.innerHTML = '';
+                    document.getElementById('hotelRoomsDrillCount').innerText = data.length + ' Records';
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 1.5rem;">No records.</td></tr>';
+                        return;
+                    }
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong style="color: var(--primary-dark);">${item.reference}</strong></td>
+                            <td>${item.hotelName}</td>
+                            <td><span class="badge badge-outline">Room ${item.roomNumber}</span></td>
+                            <td>${item.guestName}</td>
+                            <td>${item.dates}</td>
+                            <td><strong style="color: var(--gold-accent);">${item.amount}</strong></td>
+                            <td>
+                                <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;"
+                                    onclick="openRoomUnitModal('${item.reference}', '${item.hotelName}', '${item.roomNumber}', '${item.guestName}', '${item.dates}', '${item.amount}', '${item.status}')">
+                                    <i class="fas fa-eye"></i> View Unit
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        // Section C: Maintenance drilldown
+        function toggleMaintenanceHotels(el) {
+            el.classList.toggle('active');
+            const list = document.getElementById('maintenanceHotelsList');
+            list.classList.toggle('open');
+        }
+
+        function showHotelMaintenanceModal(hotelId, hotelName) {
+            const modal = document.getElementById('level3Modal');
+            const title = document.getElementById('level3Title');
+            const body = document.getElementById('level3Body');
+            title.innerText = 'Maintenance Work Orders — ' + hotelName;
+            body.innerHTML = '<p>Loading work orders...</p>';
+            modal.classList.add('open');
+
+            fetch('/admin/api/operations/maintenance/records?hotelId=' + hotelId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        body.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No open maintenance work orders for this hotel.</p>';
+                        return;
+                    }
+                    body.innerHTML = data.map(m => `
+                        <div style="background: rgba(10, 17, 40, 0.02); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong>${m.roomOrArea} — ${m.issueType}</strong>
+                                <span class="badge ${m.status === 'COMPLETED' ? 'badge-success' : 'badge-warning'}">${m.status}</span>
+                            </div>
+                            <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                Assigned Technician: <strong>${m.technicianName || 'In-House Engineer'}</strong> | Logged: ${m.reportedDate}
+                            </div>
+                            <div style="font-size: 0.85rem; margin-top: 0.35rem;">${m.description || 'Routine maintenance'}</div>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        // Section D: Inspections drilldown
+        function showInspectionsDrilldown(status, el) {
+            document.querySelectorAll('.kpi-chip').forEach(c => c.classList.remove('active'));
+            if (el) el.classList.add('active');
+            const drawer = document.getElementById('inspectionsDrilldown');
+            drawer.classList.add('open');
+            document.getElementById('inspectionsDrillTitle').innerText = status + ' Quality Audits';
+
+            fetch('/admin/api/operations/inspections?status=' + encodeURIComponent(status))
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('inspectionsDrillTbody');
+                    tbody.innerHTML = '';
+                    document.getElementById('inspectionsDrillCount').innerText = data.length + ' Records';
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 1.5rem;">No inspection records in this state.</td></tr>';
+                        return;
+                    }
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        const hotelName = item.hotel ? item.hotel.name : 'Property';
+                        tr.innerHTML = `
+                            <td><strong>${hotelName}</strong></td>
+                            <td>${item.roomOrArea}</td>
+                            <td>${item.inspectorStaffName}</td>
+                            <td>${item.inspectionDate}</td>
+                            <td><strong style="color: var(--gold-accent);">${item.score}</strong></td>
+                            <td><span class="badge badge-success">${item.status}</span></td>
+                            <td style="font-size: 0.8rem; color: var(--text-muted);">${item.notes || '-'}</td>
+                            <td>
+                                <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;"
+                                    onclick="openInspectionDetailModal('${hotelName}', '${item.roomOrArea}', '${item.inspectorStaffName}', '${item.inspectionDate}', '${item.score}', '${item.status}', '${item.notes ? item.notes.replace(/'/g, "\\'") : ''}')">
+                                    <i class="fas fa-eye"></i> Details
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        // Section E: Staff Activity drilldown
+        function showStaffDrilldown(status, el) {
+            document.querySelectorAll('.kpi-chip').forEach(c => c.classList.remove('active'));
+            if (el) el.classList.add('active');
+            const drawer = document.getElementById('staffDrilldown');
+            drawer.classList.add('open');
+            document.getElementById('staffDrillTitle').innerText = 'Staff Personnel — ' + status;
+
+            fetch('/admin/api/operations/staff?status=' + encodeURIComponent(status))
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('staffDrillTbody');
+                    tbody.innerHTML = '';
+                    document.getElementById('staffDrillCount').innerText = data.length + ' Personnel';
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 1.5rem;">No personnel currently in this activity category.</td></tr>';
+                        return;
+                    }
+                    data.forEach(s => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong>${s.employeeId || s.id}</strong></td>
+                            <td>${s.fullName || s.username}</td>
+                            <td>${s.department || 'Operations'}</td>
+                            <td>${s.designation || 'Staff'}</td>
+                            <td>${s.shiftTiming || 'Standard'}</td>
+                            <td><span class="badge ${s.activityStatus === 'Working' ? 'badge-success' : s.activityStatus === 'On Leave' ? 'badge-warning' : 'badge-secondary'}">${s.activityStatus || 'Active'}</span></td>
+                            <td><button type="button" class="btn btn-outline btn-sm" onclick="openStaffModal('${s.fullName || s.username}', '${s.employeeId || ''}', '${s.department || ''}', '${s.designation || ''}', '${s.shiftTiming || ''}', '${s.activityStatus || ''}')">Full Profile</button></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        function openGuestStayModal(ref, name, email, hotel, room, dates, guests, amount) {
+            const modal = document.getElementById('level3Modal');
+            document.getElementById('level3Title').innerText = 'Reservation Record: ' + ref;
+            document.getElementById('level3Body').innerHTML = `
+                <div style="font-size: 0.9rem; line-height: 1.7;">
+                    <div><strong>Guest Name:</strong> ${name}</div>
+                    <div><strong>Contact Email:</strong> ${email || 'Verified Guest Profile'}</div>
+                    <div><strong>Reserved Property:</strong> ${hotel}</div>
+                    <div><strong>Room Allocation:</strong> Room ${room}</div>
+                    <div><strong>Stay Duration:</strong> ${dates}</div>
+                    <div><strong>Party Size:</strong> ${guests}</div>
+                    <div><strong>Total Locked Tariff:</strong> <strong style="color: var(--gold-accent);">${amount}</strong></div>
+                    <div style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+                        <span class="badge badge-success">Verified Active Booking</span>
+                    </div>
+                </div>
+            `;
+            modal.classList.add('open');
+        }
+
+        function openStaffModal(name, empId, dept, designation, shift, activity) {
+            const modal = document.getElementById('level3Modal');
+            document.getElementById('level3Title').innerText = 'Staff Personnel Profile';
+            document.getElementById('level3Body').innerHTML = `
+                <div style="font-size: 0.9rem; line-height: 1.7;">
+                    <div style="font-size: 1.15rem; font-family: 'Cinzel', serif; color: var(--primary-dark); margin-bottom: 0.5rem;">${name}</div>
+                    <div><strong>Employee ID:</strong> ${empId}</div>
+                    <div><strong>Department:</strong> ${dept}</div>
+                    <div><strong>Designation:</strong> ${designation}</div>
+                    <div><strong>Operational Shift:</strong> ${shift}</div>
+                    <div><strong>Current Duty State:</strong> <span class="badge badge-success">${activity}</span></div>
+                </div>
+            `;
+            modal.classList.add('open');
+        }
+
+        function openRoomUnitModal(ref, hotel, room, guest, dates, amount, status) {
+            const modal = document.getElementById('level3Modal');
+            document.getElementById('level3Title').innerText = 'Room Unit Specifications: ' + ref;
+            document.getElementById('level3Body').innerHTML = `
+                <div style="font-size: 0.9rem; line-height: 1.7;">
+                    <div><strong>Hotel Property:</strong> ${hotel}</div>
+                    <div><strong>Assigned Unit:</strong> Room ${room}</div>
+                    <div><strong>Operational Status:</strong> <span class="badge badge-success">${status || 'In Service'}</span></div>
+                    <div><strong>Allocation / Resident:</strong> ${guest || 'Unallocated'}</div>
+                    <div><strong>Specifications / Dates:</strong> ${dates || 'Ready for Allocation'}</div>
+                    <div><strong>Published Tariff:</strong> <strong style="color: var(--gold-accent);">${amount}</strong></div>
+                    <div style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem; color: var(--text-muted); font-size: 0.8rem;">
+                        <i class="fas fa-shield-alt" style="color: var(--gold-accent);"></i> Inventory managed via Royal Indian Stays Central Operations Ledger
+                    </div>
+                </div>
+            `;
+            modal.classList.add('open');
+        }
+
+        function openInspectionDetailModal(hotel, area, inspector, date, score, status, notes) {
+            const modal = document.getElementById('level3Modal');
+            document.getElementById('level3Title').innerText = 'Quality Audit Inspection Report';
+            document.getElementById('level3Body').innerHTML = `
+                <div style="font-size: 0.9rem; line-height: 1.7;">
+                    <div><strong>Inspected Property:</strong> ${hotel}</div>
+                    <div><strong>Inspected Area / Facility:</strong> ${area}</div>
+                    <div><strong>Certified Auditor:</strong> ${inspector}</div>
+                    <div><strong>Audit Date:</strong> ${date}</div>
+                    <div><strong>Compliance Score:</strong> <strong style="color: var(--gold-accent); font-size: 1.1rem;">${score}</strong></div>
+                    <div><strong>Audit Status:</strong> <span class="badge badge-success">${status}</span></div>
+                    <div style="margin-top: 0.75rem; background: rgba(10, 17, 40, 0.02); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                        <strong>Auditor Notes:</strong>
+                        <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-dark);">${notes || 'Standard compliance passed.'}</p>
+                    </div>
+                </div>
+            `;
+            modal.classList.add('open');
+        }
+
+        function closeLevel3Modal() {
+            document.getElementById('level3Modal').classList.remove('open');
+        }
+    </script>
+</body>
+</html>

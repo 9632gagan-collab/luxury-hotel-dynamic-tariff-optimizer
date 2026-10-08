@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sent Requests &amp; History | Royal Indian Stays Staff</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header th:replace="~{fragments/navbar :: headerNav}"></header>
+
+    <main class="main-wrapper">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Sent Requests &amp; Message History</h1>
+                <p class="page-subtitle">Permanent record of all requests and communications dispatched to management</p>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 0.75rem; align-items: center;">
+                <a th:href="@{/staff/notifications}" class="btn-notification-bell" title="Staff Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" th:text="${unreadNotificationCount != null ? unreadNotificationCount : 0}">0</span>
+                </a>
+                <a th:href="@{/staff/messages/new}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-paper-plane"></i> Send Request to Admin
+                </a>
+            </div>
+        </div>
+
+        <!-- Staff Sub Navigation -->
+        <nav class="sub-navbar">
+            <a th:href="@{/staff/dashboard}" class="sub-nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a th:href="@{/staff/notifications}" class="sub-nav-item"><i class="fas fa-bell"></i> Notifications (<span th:text="${unreadNotificationCount != null ? unreadNotificationCount : 0}">0</span>)</a>
+            <a th:href="@{/staff/messages/inbox}" class="sub-nav-item active"><i class="fas fa-envelope"></i> Messages &amp; Requests</a>
+            <a th:href="@{/staff/messages/new}" class="sub-nav-item"><i class="fas fa-paper-plane"></i> Send Request</a>
+            <a th:href="@{/staff/profile}" class="sub-nav-item"><i class="fas fa-user-circle"></i> Profile</a>
+        </nav>
+
+        <!-- Message Sub Tabs -->
+        <div class="msg-tabs-bar">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a th:href="@{/staff/messages/inbox}" class="msg-tab-item">
+                    <i class="fas fa-inbox"></i> Inbox
+                </a>
+                <a th:href="@{/staff/messages/sent}" class="msg-tab-item active">
+                    <i class="fas fa-history"></i> Sent Requests &amp; History
+                </a>
+            </div>
+            <div>
+                <a th:href="@{/staff/messages/new}" class="btn btn-primary btn-sm" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;">
+                    <i class="fas fa-plus"></i> Send Request to Admin
+                </a>
+            </div>
+        </div>
+
+        <!-- Flash messages -->
+        <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom: 1.5rem;">
+            <i class="fas fa-check-circle"></i> <span th:text="${successMessage}">Success</span>
+        </div>
+
+        <!-- Sent Requests List Card -->
+        <div class="card" style="padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                <h3 style="font-family: 'Cinzel', serif; font-size: 1.15rem; color: var(--primary-dark); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-paper-plane" style="color: var(--gold-accent);"></i> Dispatched Requests
+                </h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);" th:text="${#lists.size(messages)} + ' dispatched request(s)'">0 request(s)</span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(messages)}" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                <i class="fas fa-clipboard-list" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                <h4 style="color: var(--primary-dark); font-size: 1.1rem; margin-bottom: 0.35rem;">No Requests Sent Yet</h4>
+                <p style="font-size: 0.88rem;">You have not submitted any requests to hotel management yet.</p>
+                <a th:href="@{/staff/messages/new}" class="btn btn-primary btn-sm" style="margin-top: 0.75rem;">
+                    <i class="fas fa-paper-plane"></i> Submit a Request
+                </a>
+            </div>
+
+            <div th:if="${not #lists.isEmpty(messages)}" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div th:each="m : ${messages}"
+                     class="msg-card-row"
+                     style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+
+                    <div style="flex: 1; min-width: 260px;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.3rem;">
+                            <span class="badge-req-type" th:text="${m.requestType != null ? m.requestType : 'Staff Request'}">Leave Request</span>
+                            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-size: 0.72rem; font-weight: 700;">
+                                <i class="fas fa-shield-alt"></i> Delivered to All Active Administrators
+                            </span>
+                        </div>
+
+                        <div class="msg-subject-title" th:text="${m.subject}">Subject Title</div>
+                        <div class="msg-preview-text" th:text="${#strings.abbreviate(m.content, 140)}">Request preview...</div>
+
+                        <div class="msg-meta-text" style="margin-top: 0.4rem;">
+                            <span><i class="far fa-clock"></i> <span th:text="${#temporals.format(m.sentAt, 'dd MMM yyyy, HH:mm')}">01 Oct 2026, 14:30</span></span>
+                            <span>• Sent by You</span>
+                        </div>
+                    </div>
+
+                    <div style="flex-shrink: 0;">
+                        <a th:href="@{/staff/messages/{id}(id=${m.id})}" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <span>View Details</span> <i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>
